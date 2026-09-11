@@ -7,17 +7,17 @@
         </div>
         
         <div class="row w-100 justify-content-center g-4">
-            <x-inicio-deploy.service-card icon="fas fa-code" title="Sistemas Web">
+            <x-publico.inicio-deploy.service-card icon="fas fa-code" title="Sistemas Web">
                 Plataformas robustas e escaláveis sob medida para automatizar processos complexos do seu negócio.
-            </x-inicio-deploy.service-card>
+            </x-publico.inicio-deploy.service-card>
             
-            <x-inicio-deploy.service-card icon="fas fa-laptop-code" title="Software Sob Medida">
+            <x-publico.inicio-deploy.service-card icon="fas fa-laptop-code" title="Software Sob Medida">
                 Desenvolvimento focado nas regras de negócio específicas da sua empresa, garantindo aderência total.
-            </x-inicio-deploy.service-card>
+            </x-publico.inicio-deploy.service-card>
             
-            <x-inicio-deploy.service-card icon="fas fa-chart-pie" title="Dashboards">
+            <x-publico.inicio-deploy.service-card icon="fas fa-chart-pie" title="Dashboards">
                 Painéis analíticos interativos para visualização de dados e tomada de decisão em tempo real.
-            </x-inicio-deploy.service-card>
+            </x-publico.inicio-deploy.service-card>
         </div>
     </div>
 </section>

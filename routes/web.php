@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
 Route::get('/solicitar-acesso', function () {
-    return view('auth.request-access'); // assumindo que a view esteja em resources/views/auth/
+    return view('auth.request-access');
 });
 
-Route::get('/inicio-deploy', function () {
-    return view('pages.inicio-deploy');
+Route::get('/deploy/inicio', function () {
+    return view('pages.publico.deploy.inicio-deploy');
 });
 
-Route::get('/servicos-deploy', function () {
-    return view('pages.servicos-deploy');
+Route::get('/deploy/servicos', function () {
+    return view('pages.publico.deploy.servicos-deploy');
 });
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
