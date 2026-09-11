@@ -1,8 +1,4 @@
-# .gitleaksignore
-title = "gitleaks ignore file"
-
-[allowlist]
-description = "Ignore test passwords"
-fingerprints = [
-    "efe1fd47264d13e1c893e7f1d07d5e409c050249:tests/Feature/AuthenticationTest.php:generic-api-key:43"
-]
+efe1fd47264d13e1c893e7f1d07d5e409c050249:tests/Feature/AuthenticationTest.php:generic-api-key:43
+959419b556497b214aa4b9f3e0415e50fecc7e6e:.env.example:project-sensitive-env-value:28
+ca89acf423b13e80b3e7081f40d8940e0d9f9cea:.github/workflows/ci.yml:project-sensitive-env-value:21
+ca89acf423b13e80b3e7081f40d8940e0d9f9cea:.github/workflows/ci.yml:project-sensitive-env-value:22
