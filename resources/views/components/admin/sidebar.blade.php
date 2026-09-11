@@ -1,7 +1,7 @@
 @php
     $items = [
         ['label' => 'Dashboard', 'icon' => 'bi-pie-chart-fill', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard'],
-        ['label' => 'Leads/Orçamentos', 'icon' => 'bi-people-fill'],
+        ['label' => 'Leads/Orçamentos', 'icon' => 'bi-people-fill', 'route' => 'admin.leads.index', 'active' => 'admin.leads.*'],
         ['label' => 'Projetos', 'icon' => 'bi-briefcase-fill', 'route' => 'admin.projects.index', 'active' => 'admin.projects.*'],
         ['label' => 'Serviços', 'icon' => 'bi-layers-fill'],
         ['label' => 'Financeiro', 'icon' => 'bi-wallet2'],
