@@ -4,7 +4,7 @@
         ['label' => 'Leads/Orçamentos', 'icon' => 'bi-people-fill', 'route' => 'admin.leads.index', 'active' => 'admin.leads.*'],
         ['label' => 'Projetos', 'icon' => 'bi-briefcase-fill', 'route' => 'admin.projects.index', 'active' => 'admin.projects.*'],
         ['label' => 'Serviços', 'icon' => 'bi-layers-fill', 'route' => 'admin.services.index', 'active' => 'admin.services.*'],
-        ['label' => 'Financeiro', 'icon' => 'bi-wallet2'],
+        ['label' => 'Financeiro', 'icon' => 'bi-wallet2', 'route' => 'admin.finance.index', 'active' => 'admin.finance.*'],
         ['label' => 'Configurações', 'icon' => 'bi-gear-fill', 'route' => 'admin.settings.profile', 'active' => 'admin.settings.*'],
     ];
 @endphp
