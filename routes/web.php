@@ -29,6 +29,15 @@ Route::get('/admin/dashboard', DashboardController::class)
 Route::get('/admin/projetos', ProjectController::class)
     ->name('admin.projects.index');
 
+Route::view('/admin/leads-orcamentos', 'pages.admin.leads.index')
+    ->name('admin.leads.index');
+
+Route::view('/admin/servicos', 'pages.admin.services.index')
+    ->name('admin.services.index');
+
+Route::view('/admin/financeiro', 'pages.admin.finance.index')
+    ->name('admin.finance.index');
+
 // A proteção por autenticação será reativada quando o módulo de acesso estiver pronto.
 Route::prefix('admin/configuracoes')
     ->name('admin.settings.')
