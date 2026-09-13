@@ -13,6 +13,7 @@
     <title>{{ $title ?? 'Dashboard' }} | {{ config('app.name', 'Deploy') }}</title>
 
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="admin-dashboard-body">
     <div class="admin-shell">
@@ -26,5 +27,8 @@
             </main>
         </div>
     </div>
+
+    <x-form.notification />
+    @stack('scripts')
 </body>
 </html>

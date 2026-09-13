@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\LeadsOrcamentosController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,23 @@ Route::view('/admin/dashboard', 'pages.admin.dashboard')
 
 Route::view('/admin/projetos', 'pages.admin.projects.index')
     ->name('admin.projects.index');
+
+Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
+    Route::get('/', 'index')->name('index');
+    Route::post('/store', 'store')->name('store');
+    Route::delete('/delete', 'delete')->name('destroy');
+});
+// Route::prefix('admin/servicos')->as('admin.servicos.')->controller(LeadsOrcamentosController::class)->group(function (): void {
+//     Route::get('/', 'index')->name('index');
+//     Route::post('/store', 'store')->name('store');
+//     Route::delete('/delete', 'delete')->name('destroy');
+// });
+
+Route::view('/admin/servicos', 'pages.admin.services.index')
+    ->name('admin.services.index');
+
+Route::view('/admin/financeiro', 'pages.admin.finance.index')
+    ->name('admin.finance.index');
 
 // A proteção por autenticação será reativada quando o módulo de acesso estiver pronto.
 Route::prefix('admin/configuracoes')
