@@ -15,4 +15,6 @@
             </main>
         </div>
     </div>
+
+    <x-form.notification />
 </x-layouts.base>

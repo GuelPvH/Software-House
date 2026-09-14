@@ -7,50 +7,85 @@
             <!-- Stats -->
             <section class="row g-3" aria-label="Indicadores de leads">
                 <div class="col-12 col-sm-6 col-md-3">
-                    <x-admin.stat-card label="Total de Leads" value="28" icon="bi-person-fill" tone="blue" note="+12% este mês" />
+                    <x-admin.stat-card label="Total de Leads" value="28" icon="bi-person-fill" tone="blue"
+                        note="+12% este mês" />
                 </div>
                 <div class="col-12 col-sm-6 col-md-3">
-                    <x-admin.stat-card label="Em Análise" value="11" icon="bi-hourglass-split" tone="yellow" note="aguardando retorno" />
+                    <x-admin.stat-card label="Em Análise" value="11" icon="bi-hourglass-split" tone="yellow"
+                        note="aguardando retorno" />
                 </div>
                 <div class="col-12 col-sm-6 col-md-3">
-                    <x-admin.stat-card label="Proposta Enviada" value="6" icon="bi-file-earmark-text-fill" tone="purple" note="com proposta em aberto" />
+                    <x-admin.stat-card label="Proposta Enviada" value="6" icon="bi-file-earmark-text-fill"
+                        tone="purple" note="com proposta em aberto" />
                 </div>
                 <div class="col-12 col-sm-6 col-md-3">
-                    <x-admin.stat-card label="Fechados" value="9" icon="bi-check-circle-fill" tone="green" note="convertidos em projeto" />
+                    <x-admin.stat-card label="Fechados" value="9" icon="bi-check-circle-fill" tone="green"
+                        note="convertidos em projeto" />
                 </div>
             </section>
 
             <!-- Filters -->
             <section class="card dashboard-card bg-white p-3 mb-0 border" aria-label="Filtros">
-                <form class="row g-2 align-items-center">
+                <form action="{{ route('admin.leads.index') }}" method="GET" class="row g-2 align-items-center">
                     <div class="col-12 col-md-3">
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-secondary"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar lead...">
+                            <span class="input-group-text bg-white border-end-0 text-secondary"><i
+                                    class="bi bi-search"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" name="search"
+                                value="{{ request('search') }}" placeholder="Buscar lead...">
                         </div>
                     </div>
                     <div class="col-12 col-md-2 d-flex align-items-center">
                         <label class="me-2 text-secondary small text-nowrap">Status:</label>
-                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;">
-                            <option>Todos</option>
+                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;"
+                            name="status_leads">
+                            <option value="">Todos</option>
+                            @if (isset($statusLeads))
+                                @foreach ($statusLeads as $status)
+                                    <option value="{{ $status->id ?? $status->name }}"
+                                        {{ request('status_leads') == ($status->id ?? $status->name) ? 'selected' : '' }}>
+                                        {{ $status->name }}
+                                    </option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                     <div class="col-12 col-md-3 d-flex align-items-center">
                         <label class="me-2 text-secondary small text-nowrap">Tipo de Projeto:</label>
-                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;">
-                            <option>Todos</option>
+                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;"
+                            name="fk_project_type">
+                            <option value="">Todos</option>
+                            @if (isset($projectsTypes))
+                                @foreach ($projectsTypes as $pt)
+                                    <option value="{{ $pt->id }}"
+                                        {{ request('fk_project_type') == $pt->id ? 'selected' : '' }}>
+                                        {{ $pt->name }}
+                                    </option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                     <div class="col-12 col-md-2 d-flex align-items-center">
                         <label class="me-2 text-secondary small text-nowrap">Período:</label>
-                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;">
-                            <option>Este mês</option>
+                        <select class="form-select border-0 shadow-sm text-secondary bg-light" style="font-size: 13px;"
+                            name="periodo">
+                            <option value="">Todos</option>
+                            <option value="today" {{ request('periodo') === 'today' ? 'selected' : '' }}>Hoje</option>
+                            <option value="this_week" {{ request('periodo') === 'this_week' ? 'selected' : '' }}>Esta
+                                semana</option>
+                            <option value="this_month" {{ request('periodo') === 'this_month' ? 'selected' : '' }}>Este
+                                mês</option>
+                            <option value="this_year" {{ request('periodo') === 'this_year' ? 'selected' : '' }}>Este
+                                ano</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-2 d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
-                        <button type="button" class="btn btn-outline-secondary btn-sm bg-white d-flex align-items-center gap-1">
-                            <i class="bi bi-download"></i> Exportar CSV
-                        </button>
+                        @if (request()->hasAny(['search', 'status_leads', 'fk_project_type', 'periodo']))
+                            <a href="{{ route('admin.leads.index') }}" class="btn btn-outline-secondary btn-sm"
+                                title="Limpar filtros">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        @endif
                         <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                             <i class="bi bi-funnel-fill"></i> Filtrar
                         </button>
@@ -61,32 +96,28 @@
             <!-- Table -->
             <section aria-label="Tabela de leads">
                 @php
-                    $leads = [
-                        ['id' => '01', 'name' => 'João Silva', 'company' => 'TechBR', 'avatar' => 'joao-silva.png', 'contact' => "joao@techbr.com\n(11) 99999-1111", 'type' => 'Sistema Web', 'typeClass' => '', 'prazo' => '3 meses', 'objetivo' => 'Automatizar gestão de...', 'status' => 'Novo', 'statusClass' => 'badge-blue', 'date' => '15 Jun 2025', 'active' => true],
-                        ['id' => '02', 'name' => 'Maria Santos', 'company' => 'Logística SA', 'avatar' => 'maria-santos.png', 'contact' => "maria@logistica.com.br\n(21) 98888-2222", 'type' => 'Software Custom', 'typeClass' => 'type-purple', 'prazo' => '6 meses', 'objetivo' => 'Sistema de rastreamento...', 'status' => 'Em Análise', 'statusClass' => 'badge-yellow', 'date' => '14 Jun 2025', 'active' => false],
-                        ['id' => '03', 'name' => 'Carlos Mendes', 'company' => 'FinTech Plus', 'avatar' => 'carlos-mendes.png', 'contact' => "carlos@fintech.com\n(11) 97777-3333", 'type' => 'Dashboard BI', 'typeClass' => 'type-purple', 'prazo' => '2 meses', 'objetivo' => 'Painel de métricas...', 'status' => 'Proposta Enviada', 'statusClass' => 'badge-purple', 'date' => '13 Jun 2025', 'active' => false],
-                        ['id' => '04', 'name' => 'Ana Lima', 'company' => 'Varejo Digital', 'avatar' => 'ana-lima.png', 'contact' => "ana@varejo.com\n(31) 96666-4444", 'type' => 'Landing Page', 'typeClass' => 'type-pink', 'prazo' => '1 mês', 'objetivo' => 'Aumentar conversão...', 'status' => 'Fechado', 'statusClass' => 'badge-green', 'date' => '12 Jun 2025', 'active' => false],
-                        ['id' => '05', 'name' => 'Pedro Costa', 'company' => 'Ind. Moderna', 'avatar' => 'pedro-costa.png', 'contact' => "pedro@ind.com\n(41) 95555-5555", 'type' => 'API Gateway', 'typeClass' => 'text-warning bg-warning-subtle', 'prazo' => '4 meses', 'objetivo' => 'Integração com ERP...', 'status' => 'Novo', 'statusClass' => 'badge-blue', 'date' => '11 Jun 2025', 'active' => false],
-                        ['id' => '06', 'name' => 'Beatriz Rocha', 'company' => 'Saúde Tech', 'avatar' => 'beatriz-rocha.png', 'contact' => "bea@saude.com\n(85) 94444-6666", 'type' => 'Sistema Web', 'typeClass' => '', 'prazo' => '5 meses', 'objetivo' => 'Prontuário eletrônico...', 'status' => 'Em Análise', 'statusClass' => 'badge-yellow', 'date' => '10 Jun 2025', 'active' => false],
-                        ['id' => '07', 'name' => 'Rafael Moura', 'company' => 'EduPlat', 'avatar' => 'rafael-moura.png', 'contact' => "rafael@edu.com\n(51) 93333-7777", 'type' => 'Software Custom', 'typeClass' => 'type-purple', 'prazo' => '8 meses', 'objetivo' => 'Plataforma de ensino...', 'status' => 'Proposta Enviada', 'statusClass' => 'badge-purple', 'date' => '9 Jun 2025', 'active' => false],
-                        ['id' => '08', 'name' => 'Camila Nunes', 'company' => 'AgriTech', 'avatar' => 'camila-nunes.png', 'contact' => "camila@agri.com\n(62) 92222-8888", 'type' => 'Dashboard BI', 'typeClass' => 'type-purple', 'prazo' => '3 meses', 'objetivo' => 'Monitoramento de...', 'status' => 'Perdido', 'statusClass' => 'bg-danger-subtle text-danger', 'date' => '8 Jun 2025', 'active' => false],
-                        ['id' => '09', 'name' => 'Lucas Ferreira', 'company' => 'Construtech', 'avatar' => 'lucas-ferreira.png', 'contact' => "lucas@constru.com\n(12) 91111-9999", 'type' => 'Sistema Web', 'typeClass' => '', 'prazo' => '12 meses', 'objetivo' => 'Gestão de obras e...', 'status' => 'Em Análise', 'statusClass' => 'badge-yellow', 'date' => '7 Jun 2025', 'active' => false],
-                        ['id' => '10', 'name' => 'Fernanda Gomes', 'company' => 'RetailMax', 'avatar' => 'fernanda-gomes.png', 'contact' => "fernanda@retail.com\n(11) 90000-0000", 'type' => 'Landing Page', 'typeClass' => 'type-pink', 'prazo' => '2 semanas', 'objetivo' => 'Lançamento de...', 'status' => 'Fechado', 'statusClass' => 'badge-green', 'date' => '6 Jun 2025', 'active' => false],
-                    ];
+                    $isPaginated = isset($leads) && $leads instanceof \Illuminate\Pagination\LengthAwarePaginator;
+                    $leadsCount = $isPaginated
+                        ? $leads->total()
+                        : (isset($leads) && is_countable($leads)
+                            ? count($leads)
+                            : 0);
                 @endphp
 
                 <article class="card dashboard-card leads-card overflow-hidden border-0 bg-white">
-                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white px-4 py-3 border-bottom">
+                    <div
+                        class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white px-4 py-3 border-bottom">
                         <div class="d-flex align-items-center gap-2">
                             <h2 class="section-title mb-0 fs-5 fw-bold">Todos os Leads</h2>
-                            <span class="badge rounded-pill bg-primary-subtle text-primary">28</span>
+                            <span class="badge rounded-pill bg-primary-subtle text-primary">{{ $leadsCount }}</span>
                         </div>
-                        <button type="button" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1">
+                        <x-form.btnModal target="modal-new-lead" color="primary" size="sm"
+                            class="d-flex align-items-center gap-1">
                             <i class="bi bi-plus-lg"></i> Novo Lead
-                        </button>
+                        </x-form.btnModal>
                     </div>
 
-                    <div class="table-responsive flex-grow-1" style="min-height: 500px">
+                    <div class="table-responsive">
                         <table class="table table-hover leads-table mb-0 align-middle">
                             <thead class="table-light text-secondary" style="font-size: 11px;">
                                 <tr>
@@ -102,212 +133,383 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($leads as $lead)
-                                    <tr class="{{ $lead['active'] ? 'bg-primary-subtle' : '' }}" style="cursor: pointer; {{ $lead['active'] ? 'border-left: 3px solid #0d6efd;' : '' }}">
-                                        <td class="text-secondary small">{{ $lead['id'] }}</td>
+                                @forelse ($leads ?? [] as $lead)
+                                    @php
+                                        $rawLeadId = is_array($lead) ? $lead['id'] : $lead->id;
+                                        $leadId = str_pad((string) $rawLeadId, 2, '0', STR_PAD_LEFT);
+                                        $leadName = is_array($lead) ? $lead['name'] : $lead->name;
+                                        $leadCompany = is_array($lead) ? $lead['company'] : $lead->company;
+                                        $leadEmail = is_array($lead)
+                                            ? explode("\n", $lead['contact'] ?? '')[0] ?? ''
+                                            : $lead->email;
+                                        $leadPhone = is_array($lead)
+                                            ? explode("\n", $lead['contact'] ?? '')[1] ?? ''
+                                            : $lead->phone;
+                                        $leadType = is_array($lead)
+                                            ? $lead['type']
+                                            : $lead->projectType?->name ?? 'Sistema Web';
+                                        $leadTypeClass = is_array($lead) ? $lead['typeClass'] ?? '' : '';
+                                        $leadPrazo = is_array($lead)
+                                            ? $lead['prazo']
+                                            : ($lead->deadline
+                                                ? \Carbon\Carbon::parse($lead->deadline)->format('d/m/Y')
+                                                : '-');
+                                        $leadObjetivo = is_array($lead) ? $lead['objetivo'] : $lead->objective;
+                                        $leadStatus = is_array($lead)
+                                            ? $lead['status']
+                                            : $lead->statusLead?->name ?? 'Novo';
+                                        $leadStatusClass = is_array($lead)
+                                            ? $lead['statusClass'] ?? 'badge-blue'
+                                            : match ($leadStatus) {
+                                                'Novo' => 'badge-blue',
+                                                'Em Análise' => 'badge-yellow',
+                                                'Proposta Enviada' => 'badge-purple',
+                                                'Fechado' => 'badge-green',
+                                                default => 'bg-danger-subtle text-danger',
+                                            };
+                                        $leadDate = is_array($lead)
+                                            ? $lead['date']
+                                            : ($lead->created_at
+                                                ? $lead->created_at->format('d M Y')
+                                                : '-');
+                                        $leadActive =
+                                            isset($selectedLead) &&
+                                            (is_array($selectedLead)
+                                                ? $selectedLead['id'] == $rawLeadId
+                                                : $selectedLead->id == $rawLeadId);
+                                    @endphp
+                                    <tr class="lead-row {{ $leadActive ? 'is-selected' : '' }}"
+                                        data-lead-id="{{ $rawLeadId }}"
+                                        style="cursor: pointer;">
+                                        <td class="text-secondary small">{{ $leadId }}</td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <img src="{{ asset('images/admin/'.$lead['avatar']) }}" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($lead['name']) }}&background=f3f4f6&color=6c757d'" alt="" class="admin-avatar-sm rounded-circle border">
+                                                <img src="https://ui-avatars.com/api/?name={{ urlencode($leadName) }}&background=f3f4f6&color=6c757d"
+                                                    alt="" class="admin-avatar-sm rounded-circle border">
                                                 <div class="lh-sm">
-                                                    <span class="d-block fw-medium text-dark" style="font-size: 13px">{{ $lead['name'] }}</span>
-                                                    <span class="d-block text-secondary" style="font-size: 11px">{{ $lead['company'] }}</span>
+                                                    <span class="d-block fw-medium text-dark"
+                                                        style="font-size: 13px">{{ $leadName }}</span>
+                                                    <span class="d-block text-secondary"
+                                                        style="font-size: 11px">{{ $leadCompany }}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="lh-sm">
-                                            @php $contacts = explode("\n", $lead['contact']); @endphp
-                                            <span class="d-block text-secondary" style="font-size: 12px">{{ $contacts[0] }}</span>
-                                            <span class="d-block text-secondary" style="font-size: 12px">{{ $contacts[1] }}</span>
+                                            <span class="d-block text-secondary"
+                                                style="font-size: 12px">{{ $leadEmail }}</span>
+                                            <span class="d-block text-secondary"
+                                                style="font-size: 12px">{{ $leadPhone }}</span>
                                         </td>
-                                        <td><span class="type-badge {{ $lead['typeClass'] ?: 'text-primary bg-primary-subtle' }} px-2 py-1 rounded-1 fw-medium" style="font-size: 11px">{{ $lead['type'] }}</span></td>
-                                        <td class="text-secondary small">{{ $lead['prazo'] }}</td>
-                                        <td class="text-secondary small text-truncate" style="max-width: 150px;">{{ $lead['objetivo'] }}</td>
-                                        <td><span class="soft-badge {{ $lead['statusClass'] }} rounded-pill px-2 py-1 fw-medium" style="font-size: 11px">{{ $lead['status'] }}</span></td>
-                                        <td class="text-secondary small text-nowrap">{{ $lead['date'] }}</td>
+                                        <td><span
+                                                class="type-badge {{ $leadTypeClass ?: 'text-primary bg-primary-subtle' }} px-2 py-1 rounded-1 fw-medium"
+                                                style="font-size: 11px">{{ $leadType }}</span></td>
+                                        <td class="text-secondary small">{{ $leadPrazo }}</td>
+                                        <td class="text-secondary small text-truncate" style="max-width: 150px;">
+                                            {{ $leadObjetivo }}</td>
+                                        <td><span
+                                                class="soft-badge {{ $leadStatusClass }} rounded-pill px-2 py-1 fw-medium"
+                                                style="font-size: 11px">{{ $leadStatus }}</span></td>
+                                        <td class="text-secondary small text-nowrap">{{ $leadDate }}</td>
                                         <td>
                                             <div class="d-flex justify-content-end gap-1">
-                                                <button type="button" class="btn btn-sm btn-light text-primary {{ $lead['active'] ? 'bg-primary text-white' : '' }} border-0" aria-label="Visualizar" style="border-radius: 4px;">
+                                                <button type="button"
+                                                    class="btn btn-sm btn-light text-primary {{ $leadActive ? 'bg-primary text-white' : '' }} border-0 btn-view-lead"
+                                                    data-lead-id="{{ $rawLeadId }}" aria-label="Visualizar"
+                                                    style="border-radius: 4px;">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-light text-secondary border-0" aria-label="Excluir" style="border-radius: 4px;">
+                                                <button type="button"
+                                                    class="btn btn-sm btn-light text-danger border-0 btn-delete-lead"
+                                                    data-lead-id="{{ $rawLeadId }}"
+                                                    data-lead-name="{{ $leadName }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modal-delete-lead"
+                                                    aria-label="Excluir" style="border-radius: 4px;"
+                                                    title="Excluir Lead">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center py-5 text-secondary">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
+                                            Nenhum lead encontrado com os filtros aplicados.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-3 bg-white px-4 py-3 border-top">
-                        <small class="text-secondary" style="font-size: 12px">Mostrando 1–10 de 28 leads</small>
-                        <nav aria-label="Paginação dos leads">
-                            <ul class="pagination pagination-sm gap-1 mb-0">
-                                <li class="page-item disabled"><a class="page-link border-0 rounded text-secondary" href="#" aria-label="Anterior"><i class="bi bi-chevron-left"></i></a></li>
-                                <li class="page-item active"><a class="page-link border-0 rounded bg-primary" href="#" aria-current="page">1</a></li>
-                                <li class="page-item"><a class="page-link border-0 rounded text-secondary" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link border-0 rounded text-secondary" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link border-0 rounded text-secondary" href="#" aria-label="Próxima"><i class="bi bi-chevron-right"></i></a></li>
-                            </ul>
-                        </nav>
+                    <div
+                        class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-3 bg-white px-4 py-3 border-top">
+                        @if ($isPaginated && $leads->total() > 0)
+                            <small class="text-secondary" style="font-size: 12px">
+                                Mostrando {{ $leads->firstItem() }}–{{ $leads->lastItem() }} de {{ $leads->total() }}
+                                leads
+                            </small>
+                            <div>
+                                {{ $leads->links() }}
+                            </div>
+                        @else
+                            <small class="text-secondary" style="font-size: 12px">
+                                Total: {{ $leadsCount }} leads
+                            </small>
+                        @endif
                     </div>
                 </article>
             </section>
         </div>
 
-        <!-- Right Side Panel / Offcanvas content shown as col -->
-        <div class="col-12 col-xl-3">
-            <aside class="card border-0 bg-white shadow-sm h-100 rounded-3">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
-                    <h5 class="mb-0 fs-6 fw-bold text-dark d-flex align-items-center gap-2">
-                        <i class="bi bi-circle-fill text-primary" style="font-size: 6px;"></i> Detalhes do Lead
-                    </h5>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2">Novo</span>
-                        <button class="btn-close" style="font-size: 10px;"></button>
-                    </div>
-                </div>
-
-                <div class="card-body px-4 py-4 d-flex flex-column gap-4">
-                    <!-- User Info -->
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="https://ui-avatars.com/api/?name=Joao+Silva&background=f3f4f6&color=6c757d" alt="João Silva" class="rounded-circle border" style="width: 48px; height: 48px;">
-                        <div class="lh-sm">
-                            <h4 class="fs-6 fw-bold mb-1">João Silva</h4>
-                            <span class="text-secondary d-block" style="font-size: 13px;">TechBR</span>
-                            <span class="text-secondary d-block" style="font-size: 11px;">Recebido em 15 Jun 2025</span>
-                        </div>
-                    </div>
-
-                    <!-- Contact Info -->
-                    <div class="bg-light rounded-3 p-3 text-secondary" style="font-size: 13px;">
-                        <div class="text-uppercase fw-bold text-secondary mb-3" style="font-size: 10px; letter-spacing: 0.5px;">INFORMAÇÕES DE CONTATO</div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-envelope text-primary"></i> joao@techbr.com
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-telephone text-primary"></i> (11) 99999-1111
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-geo-alt text-primary"></i> TechBR - São Paulo, SP
-                        </div>
-                    </div>
-
-                    <!-- Project Details -->
-                    <div>
-                        <div class="text-uppercase fw-bold text-secondary mb-3" style="font-size: 10px; letter-spacing: 0.5px;">DETALHES DO PROJETO</div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="bg-light rounded-3 p-2 px-3 h-100">
-                                    <span class="text-secondary d-block mb-1" style="font-size: 11px;">Tipo</span>
-                                    <span class="text-primary bg-primary-subtle px-2 py-1 rounded-1 fw-medium d-inline-block" style="font-size: 12px;">Sistema Web</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="bg-light rounded-3 p-2 px-3 h-100">
-                                    <span class="text-secondary d-block mb-1" style="font-size: 11px;">Prazo Estimado</span>
-                                    <span class="fw-bold d-block text-dark" style="font-size: 13px;">3 meses</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="bg-light rounded-3 p-2 px-3 h-100">
-                                    <span class="text-secondary d-block mb-1" style="font-size: 11px;">Orçamento</span>
-                                    <span class="text-success fw-bold d-block" style="font-size: 13px;">R$ 25.000</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="bg-light rounded-3 p-2 px-3 h-100">
-                                    <span class="text-secondary d-block mb-1" style="font-size: 11px;">Prioridade</span>
-                                    <span class="text-danger fw-medium d-flex align-items-center gap-1" style="font-size: 13px;"><i class="bi bi-circle-fill" style="font-size: 6px;"></i> Alta</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Objective/Description -->
-                    <div>
-                        <div class="text-uppercase fw-bold text-secondary mb-2" style="font-size: 10px; letter-spacing: 0.5px;">OBJETIVO / DESCRIÇÃO</div>
-                        <div class="bg-light rounded-3 p-3">
-                            <p class="text-secondary m-0 lh-base" style="font-size: 13px;">
-                                Automatizar a gestão de estoque da empresa TechBR, com módulos de entrada/saída, alertas de reposição automáticos e relatórios de movimentação em tempo real integrados ao sistema financeiro existente.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="d-flex flex-column gap-2 mt-2">
-                        <button class="btn btn-primary d-flex justify-content-center align-items-center gap-2 w-100 fw-medium">
-                            <i class="bi bi-file-earmark-text"></i> Enviar Proposta
-                        </button>
-                        <button class="btn btn-outline-primary d-flex justify-content-center align-items-center gap-2 w-100 fw-medium">
-                            <i class="bi bi-calendar-event"></i> Agendar Reunião
-                        </button>
-                        <button class="btn btn-link text-secondary text-decoration-none d-flex justify-content-center align-items-center gap-1 w-100 mt-1" style="font-size: 13px;">
-                            <i class="bi bi-x"></i> Marcar como Perdido
-                        </button>
-                    </div>
-
-                    <!-- Activity -->
-                    <div class="mt-2 border-top pt-4">
-                        <div class="text-uppercase fw-bold text-secondary mb-4" style="font-size: 10px; letter-spacing: 0.5px;">ATIVIDADE DO LEAD</div>
-                        
-                        <div class="position-relative ms-2 border-start border-2 border-light pb-4">
-                            <div class="position-absolute top-0 start-0 translate-middle p-1 bg-primary rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; margin-left: -1px;">
-                                <i class="bi bi-person-fill text-white" style="font-size: 12px;"></i>
-                            </div>
-                            <div class="ms-4">
-                                <div class="fw-bold text-dark" style="font-size: 13px;">Lead recebido</div>
-                                <div class="text-secondary" style="font-size: 11px;">Formulário do site — 15 Jun 2025, 08:42</div>
-                            </div>
-                        </div>
-
-                        <div class="position-relative ms-2 border-start border-2 border-light pb-4">
-                            <div class="position-absolute top-0 start-0 translate-middle p-1 bg-purple rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; margin-left: -1px; background-color: #6f42c1;">
-                                <i class="bi bi-envelope-fill text-white" style="font-size: 10px;"></i>
-                            </div>
-                            <div class="ms-4">
-                                <div class="fw-bold text-dark" style="font-size: 13px;">Email de boas-vindas enviado</div>
-                                <div class="text-secondary" style="font-size: 11px;">Automático — 15 Jun 2025, 08:45</div>
-                            </div>
-                        </div>
-                        
-                        <div class="position-relative ms-2 border-start border-2 border-light pb-4">
-                            <div class="position-absolute top-0 start-0 translate-middle p-1 bg-warning rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; margin-left: -1px;">
-                                <i class="bi bi-eye-fill text-white" style="font-size: 12px;"></i>
-                            </div>
-                            <div class="ms-4">
-                                <div class="fw-bold text-dark" style="font-size: 13px;">Lead visualizado</div>
-                                <div class="text-secondary" style="font-size: 11px;">Admin User — 15 Jun 2025, 11:00</div>
-                            </div>
-                        </div>
-
-                        <div class="position-relative ms-2">
-                            <div class="position-absolute top-0 start-0 translate-middle p-1 bg-success rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; margin-left: -1px;">
-                                <i class="bi bi-telephone-fill text-white" style="font-size: 12px;"></i>
-                            </div>
-                            <div class="ms-4">
-                                <div class="fw-bold text-dark" style="font-size: 13px;">Tentativa de contato</div>
-                                <div class="text-secondary mb-1" style="font-size: 11px;">Admin User — 15 Jun 2025, 14:30</div>
-                                <div class="bg-light p-2 rounded text-secondary" style="font-size: 12px;">Ligou, não atendeu. Deixou recado.</div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </aside>
+        <!-- Right Side Panel / Componente de Detalhes do Lead -->
+        <div class="col-12 col-xl-3" id="lead-details-container">
+            <x-admin.leads.details :lead="$selectedLead" />
         </div>
     </div>
 
+    <!-- Modal Novo Lead -->
+    <x-form.modal id="modal-new-lead" title="Novo Lead" size="lg" submit-label="Salvar Lead"
+        form="formNovoLead">
+        <form id="formNovoLead" action="{{ route('admin.leads.store') }}" method="POST">
+            @csrf
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="lead-name" class="form-label small fw-medium text-secondary">Nome Completo</label>
+                    <input type="text" class="form-control" id="lead-name" name="name"
+                        value="{{ old('name') }}" placeholder="Ex: João Silva" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="lead-company" class="form-label small fw-medium text-secondary">Empresa</label>
+                    <input type="text" class="form-control" id="lead-company" name="company"
+                        value="{{ old('company') }}" placeholder="Ex: TechBR" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="lead-email" class="form-label small fw-medium text-secondary">E-mail</label>
+                    <input type="email" class="form-control" id="lead-email" name="email"
+                        value="{{ old('email') }}" placeholder="joao@empresa.com" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="lead-phone" class="form-label small fw-medium text-secondary">Telefone /
+                        WhatsApp</label>
+                    <input type="text" class="form-control" id="lead-phone" name="phone"
+                        value="{{ old('phone') }}" placeholder="(11) 99999-9999" required>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="lead-type" class="form-label small fw-medium text-secondary">Tipo de Projeto</label>
+                    <select class="form-select" id="lead-type" name="fk_project_type" required>
+                        <option value="" selected disabled>Selecione o tipo</option>
+                        @foreach ($projectsTypes as $pt)
+                            <option value="{{ $pt->id }}"
+                                {{ old('fk_project_type') == $pt->id ? 'selected' : '' }}>{{ $pt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="lead-deadline" class="form-label small fw-medium text-secondary">Data Limite
+                        (Deadline)</label>
+                    <input type="date" class="form-control" id="lead-deadline" name="deadline"
+                        value="{{ old('deadline') }}" required>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="lead-estimated-value" class="form-label small fw-medium text-secondary">Valor Estimado
+                        (R$)</label>
+                    <input type="number" step="0.01" min="0" class="form-control"
+                        id="lead-estimated-value" name="estimated_value" value="{{ old('estimated_value') }}"
+                        placeholder="0.00" required>
+                </div>
+                <div class="col-12">
+                    <label for="lead-objective" class="form-label small fw-medium text-secondary">Objetivo /
+                        Descrição</label>
+                    <textarea class="form-control" id="lead-objective" name="objective" rows="3"
+                        placeholder="Descreva resumidamente o objetivo do projeto..." required>{{ old('objective') }}</textarea>
+                </div>
+            </div>
+        </form>
+    </x-form.modal>
+    <x-form.modal id="modal-delete-lead" title="Excluir Lead" size="md" color="danger" submit-label="Excluir Lead"
+        form="formDeleteLead">
+        <form id="formDeleteLead" action="{{ route('admin.leads.destroy') }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <div class="row g-3">
+                <div class="col-12">
+                    <p class="text-secondary mb-2 text-center">Tem certeza que deseja excluir este lead?</p>
+                    <p class="text-danger small mb-0 text-center"><i class="bi bi-exclamation-triangle-fill me-1"></i> Esta ação não pode ser desfeita.</p>
+                    <input type="hidden" name="id" id="delete-lead-id" value="">
+                </div>
+            </div>
+        </form>
+    </x-form.modal>
+
     <!-- Extra styles to match design if not present -->
     @push('styles')
-    <style>
-        .badge-blue { background-color: #e0f2fe; color: #0284c7; }
-        .badge-yellow { background-color: #fef08a; color: #a16207; }
-        .badge-purple { background-color: #f3e8ff; color: #7e22ce; }
-        .badge-green { background-color: #dcfce7; color: #15803d; }
-        .type-purple { background-color: #f3e8ff; color: #7e22ce; }
-        .type-pink { background-color: #fce7f3; color: #be185d; }
-    </style>
+        <style>
+            .badge-blue {
+                background-color: #e0f2fe;
+                color: #0284c7;
+            }
+
+            .badge-yellow {
+                background-color: #fef08a;
+                color: #a16207;
+            }
+
+            .badge-purple {
+                background-color: #f3e8ff;
+                color: #7e22ce;
+            }
+
+            .badge-green {
+                background-color: #dcfce7;
+                color: #15803d;
+            }
+
+            .type-purple {
+                background-color: #f3e8ff;
+                color: #7e22ce;
+            }
+
+            .type-pink {
+                background-color: #fce7f3;
+                color: #be185d;
+            }
+
+            .lead-row {
+                cursor: pointer;
+                transition: background-color 0.15s ease-in-out;
+            }
+
+            .lead-row:hover > td {
+                background-color: #f8fafc !important;
+            }
+
+            .lead-row.is-selected > td {
+                background-color: #e0f2fe !important;
+            }
+
+            .lead-row.is-selected > td:first-child {
+                border-left: 4px solid #0d6efd !important;
+                font-weight: 600;
+            }
+        </style>
     @endpush
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('lead-details-container');
+            if (!container) return;
+
+            // Fechar / limpar painel de detalhes ao clicar no botão fechar
+            container.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-close-lead-details')) {
+                    container.innerHTML = `
+                        <aside class="card border-0 bg-white shadow-sm h-100 rounded-3">
+                            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
+                                <h5 class="mb-0 fs-6 fw-bold text-dark d-flex align-items-center gap-2">
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 6px;"></i> Detalhes do Lead
+                                </h5>
+                            </div>
+                            <div class="card-body px-4 py-5 text-center text-secondary d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
+                                <i class="bi bi-person-bounding-box fs-1 text-muted mb-3"></i>
+                                <h6 class="fw-bold text-dark">Nenhum lead selecionado</h6>
+                                <p class="small text-secondary mb-0">Clique no ícone de visualizar em qualquer lead da tabela para ver seus detalhes completos.</p>
+                            </div>
+                        </aside>
+                    `;
+
+                    document.querySelectorAll('.lead-row').forEach(row => {
+                        row.classList.remove('is-selected');
+                        const btn = row.querySelector('.btn-view-lead');
+                        if (btn) {
+                            btn.classList.remove('bg-primary', 'text-white');
+                        }
+                    });
+                }
+            });
+
+            function loadLeadDetails(leadId) {
+                if (!leadId) return;
+
+                // Atualizar destaque das linhas na tabela
+                document.querySelectorAll('.lead-row').forEach(row => {
+                    const isTarget = String(row.dataset.leadId) === String(leadId);
+                    row.classList.toggle('is-selected', isTarget);
+                    const btn = row.querySelector('.btn-view-lead');
+                    if (btn) {
+                        btn.classList.toggle('bg-primary', isTarget);
+                        btn.classList.toggle('text-white', isTarget);
+                    }
+                });
+
+                // Feedback visual de carregamento suave
+                container.style.opacity = '0.5';
+                container.style.pointerEvents = 'none';
+
+                fetch(`{{ route('admin.leads.index') }}?lead_id=${leadId}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erro ao carregar os dados do lead');
+                        return response.text();
+                    })
+                    .then(html => {
+                        container.innerHTML = html;
+                    })
+                    .catch(err => {
+                        console.error('Falha ao carregar detalhes:', err);
+                    })
+                    .finally(() => {
+                        container.style.opacity = '1';
+                        container.style.pointerEvents = 'auto';
+                    });
+            }
+
+            // Clique na linha inteira para selecionar o lead (ou no botão do olho)
+            document.querySelectorAll('.lead-row').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Se o clique foi no botão de excluir (ou botão diferente do olho), não seleciona
+                    if (e.target.closest('.btn-delete-lead') || (e.target.closest('button') && !e.target.closest('.btn-view-lead'))) {
+                        return;
+                    }
+
+                    const leadId = this.dataset.leadId;
+                    if (leadId) {
+                        loadLeadDetails(leadId);
+                    }
+                });
+            });
+
+            // Configurar dados na modal de exclusão
+            const modalDelete = document.getElementById('modal-delete-lead');
+            if (modalDelete) {
+                modalDelete.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    if (button && button.dataset.leadId) {
+                        const idInput = document.getElementById('delete-lead-id');
+                        const nameEl = document.getElementById('delete-lead-name');
+                        if (idInput) idInput.value = button.dataset.leadId;
+                        if (nameEl) nameEl.textContent = button.dataset.leadName ? `"${button.dataset.leadName}"` : '';
+                    }
+                });
+            }
+
+            // Fallback de clique direto no botão de excluir
+            document.querySelectorAll('.btn-delete-lead').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const leadId = this.dataset.leadId;
+                    const leadName = this.dataset.leadName || '';
+                    const idInput = document.getElementById('delete-lead-id');
+                    const nameEl = document.getElementById('delete-lead-name');
+                    if (idInput) idInput.value = leadId;
+                    if (nameEl) nameEl.textContent = leadName ? `"${leadName}"` : '';
+                });
+            });
+        });
+    </script>
 </x-admin.layout>
