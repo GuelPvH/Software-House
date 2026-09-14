@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Admin\LeadsOrcamentosController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LeadsOrcamentosController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
