@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\LeadsOrcamentosController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
@@ -22,10 +24,10 @@ Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::view('/admin/dashboard', 'pages.admin.dashboard')
+Route::get('/admin/dashboard', DashboardController::class)
     ->name('admin.dashboard');
 
-Route::view('/admin/projetos', 'pages.admin.projects.index')
+Route::get('/admin/projetos', ProjectController::class)
     ->name('admin.projects.index');
 
 Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
