@@ -93,15 +93,15 @@ O `setup` é idempotente: pode ser rodado de novo a qualquer momento. Ele faz,
 nesta ordem (a ordem importa — cada passo depende do anterior):
 
 ```bash
-cp .env.example .env                                # se ainda não existir
-docker compose build
-docker compose run  --rm app  composer install      # vendor precisa existir antes de subir
-docker compose run  --rm vite npm ci                # run --rm, não exec: o serviço vite
-                                                    # só sobe depois que node_modules existe
-docker compose up -d                                # aguarda mysql ficar healthy
-docker compose exec -u www-data app php artisan key:generate
-docker compose exec -u www-data app php artisan migrate --force
-docker compose run  --rm vite npm run build
+cp .env.example .env                                    # se ainda não existir
+docker compose build                                    # constrói a imagem monolítica
+docker compose up -d                                    # aguarda mysql ficar healthy
+docker compose exec app composer install                # instala dependências PHP
+docker compose exec app npm ci                          # instala dependências JS
+docker compose exec app php artisan key:generate        # gera APP_KEY
+docker compose exec app php artisan migrate --force     # roda as migrations
+docker compose exec app php artisan storage:link --force
+docker compose exec app npm run build                   # compila os assets
 ```
 
 Para popular o scaffold técnico atual com dados de exemplo:
@@ -117,7 +117,7 @@ make seed          # Windows: .\make.ps1 seed
 | Serviço | URL | Observação |
 |---|---|---|
 | Aplicação | http://localhost:8000 | porta em `APP_PORT` |
-| Vite (dev server / HMR) | http://localhost:5175 | porta em `VITE_PORT` |
+| Vite HMR | http://localhost:5175 | porta em `VITE_PORT` — só quando `npm run dev` for iniciado manualmente dentro do container |
 | Health check raso | http://localhost:8000/up | só confirma que o PHP responde |
 
 Conflito de porta se resolve **no `.env`**, nunca no `compose.yaml`.
@@ -132,35 +132,39 @@ configuração local do ambiente e nunca publique seus endereços ou portas.
 ```
 rede: software-house-ppw_net (bridge)
 
-  navegador  ──:8000──▶  nginx  ──fastcgi :9000──▶  app (php-fpm)
-      │                    ▲                            │
-      │  :5175 HMR         │  mesmo bind mount          ├──▶ mysql  :3306  [volume]
-      ▼                    │  do código                 └──▶ redis  :6379  [volume]
-     vite ──────────────────┘                                  ▲
-                                                     horizon ──┤  substitui queue:work
-  profile "tools":  ferramentas administrativas locais  scheduler ┘ schedule:work
+  navegador ──:8000──▶  app (Apache + PHP + Node)  ──▶ mysql  :3306  [volume]
+                  │                                 └──▶ redis  :6379  [volume]
+                  │  :5175 HMR (quando npm run dev ativo)
+                  ▼
+               [vite — rodando dentro do mesmo container app]
+
+  profile "tools": phpmyadmin :8082, mailpit :8026
 ```
 
-O bind mount do código está no `nginx` **e** no `app`: o nginx resolve o
-arquivo estático e monta o `SCRIPT_FILENAME` que envia ao FPM. Se o código
-existisse só no `app`, toda request viraria `404 File not found`.
+O container `app` é **monolítico**: Apache, PHP 8.4 e Node 24 convivem no mesmo
+container. Para iniciar o Vite HMR em modo desenvolvimento:
 
-`vendor/` e `node_modules/` são **volumes nomeados**, não bind mount: em Docker
-Desktop, sincronizar dezenas de milhares de arquivos pequenos com o host é
-lento demais. Eles não precisam existir na sua máquina.
+```bash
+docker compose exec -it app bash
+# ou diretamente via docker compose:
+docker compose exec app npm run dev      # inicia o Vite na porta 5175
+```
+
+`vendor/` e `node_modules/` são **volumes nomeados** — não precisam existir na
+sua máquina e são rápidos mesmo no Docker Desktop.
 
 ---
 
 ## 5. Comandos do dia a dia
 
-Os dez mais usados (`make <alvo>` no Linux/macOS, `.\make.ps1 <alvo>` no Windows):
+Os mais usados (`make <alvo>` no Linux/macOS, `.\make.ps1 <alvo>` no Windows):
 
 | Alvo | O que faz |
 |---|---|
 | `up` / `down` | sobe / para os containers (dados preservados) |
 | `ps` | estado dos containers |
-| `logs-app` | segue o log de app, nginx e queue |
-| `shell` | shell no container da aplicação, como `www-data` |
+| `logs-app` | segue o log do Apache (container app) |
+| `shell` | shell no container da aplicação como root — igual ao `sejus_app` |
 | `artisan c="..."` | qualquer comando artisan |
 | `composer c="..."` | qualquer comando composer |
 | `npm c="..."` | qualquer comando npm |
@@ -180,18 +184,22 @@ make npm      c="install chart.js"
 Sem `make`, os mesmos comandos por extenso:
 
 ```bash
-docker compose exec -u www-data app php artisan migrate:status
-docker compose run  --rm app  composer require spatie/laravel-permission
-docker compose run  --rm vite npm install chart.js
-docker compose exec -u www-data app ./vendor/bin/pest
-docker compose exec -u www-data app ./vendor/bin/pint --dirty
-docker compose exec -u www-data app ./vendor/bin/phpstan analyse --memory-limit=1G
+docker compose exec app php artisan migrate:status
+docker compose exec app composer require spatie/laravel-permission
+docker compose exec app npm install chart.js
+docker compose exec app ./vendor/bin/pest
+docker compose exec app ./vendor/bin/pint --dirty
+docker compose exec app ./vendor/bin/phpstan analyse --memory-limit=1G
 ```
 
-> **Por que `-u www-data` no `exec`?** `docker compose exec` não passa pelo
-> entrypoint, que é quem derruba o privilégio. Sem a flag, os arquivos criados
-> dentro do container nasceriam pertencendo ao root. Em `run --rm` a flag não é
-> necessária: o entrypoint cuida disso.
+Para entrar no container e rodar `npm run dev` (Vite HMR):
+
+```bash
+docker compose exec -it app bash
+# ou diretamente via docker compose:
+docker compose exec app npm run build   # compila os assets
+docker compose exec app npm run dev     # inicia o Vite com HMR na porta 5175
+```
 
 ---
 
@@ -311,8 +319,8 @@ make hook-install    # Windows: .\make.ps1 hook-install
 
 ```bash
 make logs            # tudo
-make logs-app        # app, nginx e queue
-docker compose logs --tail=100 mysql vite scheduler
+make logs-app        # só o container app (Apache + PHP)
+docker compose logs --tail=100 mysql
 ```
 
 Os containers escrevem em stdout/stderr — não há arquivo de log escondido
@@ -358,8 +366,9 @@ dentro de um container, `localhost` é o próprio container. O `compose.yaml` j�
 espera o healthcheck do MySQL antes de subir a aplicação.
 
 **`404 File not found` em tudo.**
-O nginx precisa do mesmo bind mount do código que o `app`. Confira o serviço
-`nginx` no `compose.yaml`.
+O Apache precisa que o `DocumentRoot` aponte para `public/`. Confirme que o
+arquivo `docker/monolith/apache.conf` está correto e que a imagem foi
+reconstruída após qualquer mudança nele.
 
 **O HMR não recarrega ao salvar arquivo.**
 Duas causas, ambas cobertas em `vite.config.js`: `hmr.host` precisa ser um
@@ -367,28 +376,18 @@ endereço que o **navegador do host** alcance (`localhost`), e `usePolling`
 precisa estar ligado, porque o inotify não propaga através de bind mount em
 Windows/macOS/WSL2.
 
-**O container `vite` fica reiniciando.**
-Normal enquanto `node_modules` não existe — o serviço roda `npm run dev`. Por
-isso toda instalação de frontend usa `run --rm`, não `exec`:
-
-```bash
-docker compose run --rm vite npm ci
-```
-
-**`EACCES: permission denied, open 'public/hot'`.**
-Os containers PHP e Node gravam no mesmo bind mount e precisam do mesmo
-uid/gid. Ambos usam `APP_UID`/`APP_GID` do `.env` — não crie um par separado
-para o Node.
+**O `npm run dev` termina sozinho.**
+Verifique se o `node_modules` existe dentro do container: `docker exec software-house_app ls node_modules/.bin/vite`. Se não existir, rode `npm ci` primeiro.
 
 **Permissão negada em `storage/` ou `bootstrap/cache/` (Linux nativo).**
-Alinhe `APP_UID`/`APP_GID` do `.env` com o seu usuário:
+O entrypoint faz o `chown` automaticamente. Se o problema persistir:
 
 ```bash
-id -u && id -g
+docker compose exec app chown -R www-data:www-data storage bootstrap
 ```
 
-Depois `make rebuild`. Nunca use `chmod -R 777` em `storage/` — isso é falha de
-segurança, não solução.
+Nunca use `chmod -R 777` em `storage/` — isso é falha de segurança, não
+solução.
 
 **A análise estática demora minutos.**
 O cache do PHPStan e do Rector fica em `/tmp` dentro do container justamente

@@ -1,5 +1,12 @@
 # =============================================================================
-# Ambiente de desenvolvimento 100% containerizado.
+# Ambiente de desenvolvimento — container monolítico.
+#
+# Um único serviço de aplicação (Apache + PHP + Node) substitui os três
+# serviços anteriores (nginx, app/php-fpm, vite). Para iniciar o Vite HMR:
+#
+#   docker exec -it software-house_app bash
+#   npm run build    # compila os assets para produção
+#   npm run dev      # inicia o Vite com HMR (porta 5175)
 #
 # Sem a chave `version:` — obsoleta no Compose v2 e gera warning.
 # Toda porta publicada vem do `.env`: conflito se resolve lá, nunca aqui.
@@ -8,178 +15,55 @@
 
 name: software-house-ppw
 
-# -----------------------------------------------------------------------------
-# Blocos reutilizáveis: app, queue e scheduler compartilham imagem e montagens.
-# -----------------------------------------------------------------------------
-x-app-build: &app-build
-  context: .
-  dockerfile: docker/php/Dockerfile
-  target: dev
-  args:
-    PHP_VERSION: ${PHP_VERSION:-8.4}
-    UID: ${APP_UID:-82}
-    GID: ${APP_GID:-82}
-
-x-app-volumes: &app-volumes
-  # O código vive no bind mount. `vendor` é volume nomeado: em Docker Desktop
-  # o bind de ~30k arquivos pequenos é lento demais (§9.1).
-  - .:/var/www/html
-  - vendor:/var/www/html/vendor
-
-x-app-env: &app-env
-  XDEBUG_MODE: ${XDEBUG_MODE:-off}
-  PHP_IDE_CONFIG: serverName=${COMPOSE_PROJECT_NAME:-software-house-ppw}
-
-x-app-depends: &app-depends
-  mysql:
-    condition: service_healthy
-  redis:
-    condition: service_healthy
-
 services:
   # ---------------------------------------------------------------------------
-  # PHP-FPM — roda a aplicação. Não publica porta: só o nginx fala com ele.
+  # app — Apache + PHP 8.4 + Node 24
+  # Container único que substitui nginx + php-fpm + vite.
   # ---------------------------------------------------------------------------
   app:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_app
-    build: *app-build
+    build:
+      context: .
+      dockerfile: docker/monolith/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
+        NODE_VERSION: ${NODE_VERSION:-24}
     image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
     restart: unless-stopped
-    environment: *app-env
-    volumes: *app-volumes
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+      PHP_IDE_CONFIG: serverName=${COMPOSE_PROJECT_NAME:-software-house-ppw}
+      VITE_PORT: ${VITE_PORT:-5175}
+      APP_PORT: ${APP_PORT:-8000}
+    ports:
+      # Aplicação (Apache)
+      - "${APP_PORT:-8000}:80"
+      # Vite HMR — só quando `npm run dev` for iniciado manualmente dentro do container
+      - "127.0.0.1:${VITE_PORT:-5175}:5175"
+    volumes:
+      # Código-fonte via bind mount
+      - .:/var/www/html
+      # `vendor` em volume nomeado: evita lentidão de 30k+ arquivos em Docker Desktop
+      - vendor:/var/www/html/vendor
+      # `node_modules` em volume nomeado: mesma razão do vendor
+      - node_modules:/var/www/html/node_modules
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    depends_on: *app-depends
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks: [net]
     healthcheck:
-      # PHP-FPM não tem endpoint HTTP: o check fala FastCGI direto (§6.4).
-      test: ["CMD", "php-fpm-healthcheck"]
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1/favicon.ico"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 30s
 
   # ---------------------------------------------------------------------------
-  # Nginx — precisa do MESMO bind mount do código: ele resolve o arquivo
-  # estático e envia SCRIPT_FILENAME ao FPM. Sem isso, tudo vira 404.
-  # ---------------------------------------------------------------------------
-  nginx:
-    container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_nginx
-    build:
-      context: .
-      dockerfile: docker/nginx/Dockerfile
-    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-nginx:dev
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-8000}:80"
-    volumes:
-      - .:/var/www/html:ro
-    depends_on:
-      app:
-        condition: service_healthy
-    networks: [net]
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/nginx-health"]
-      interval: 15s
-      timeout: 3s
-      retries: 5
-      start_period: 10s
-
-  # ---------------------------------------------------------------------------
-  # Vite — dev server com HMR. Entra em crash-loop enquanto node_modules não
-  # existe: por isso toda instalação de frontend usa `run --rm vite`, não `exec`.
-  # ---------------------------------------------------------------------------
-  vite:
-    container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_vite
-    build:
-      context: .
-      dockerfile: docker/node/Dockerfile
-      args:
-        NODE_VERSION: ${NODE_VERSION:-24}
-        # MESMO uid/gid do serviço `app`, e não um par próprio: os dois
-        # containers gravam no mesmo bind mount. Com identidades diferentes,
-        # o Vite não consegue criar `public/hot` (dono é o usuário do PHP) e
-        # entra em crash-loop com EACCES.
-        UID: ${APP_UID:-82}
-        GID: ${APP_GID:-82}
-    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-node:dev
-    restart: unless-stopped
-    environment:
-      VITE_PORT: ${VITE_PORT:-5175}
-      APP_PORT: ${APP_PORT:-8000}
-    ports:
-      # Porta igual no host e no container: a URL gravada em `public/hot`
-      # precisa ser alcançável pelo navegador do host.
-      - "127.0.0.1:${VITE_PORT:-5175}:${VITE_PORT:-5175}"
-    volumes:
-      - .:/var/www/html
-      - node_modules:/var/www/html/node_modules
-    networks: [net]
-
-  # ---------------------------------------------------------------------------
-  # Worker da fila
-  # ---------------------------------------------------------------------------
-  queue:
-    container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_queue
-    build: *app-build
-    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
-    restart: unless-stopped
-    environment: *app-env
-    volumes: *app-volumes
-    command: ["php", "artisan", "horizon"]
-    # O Horizon trata SIGTERM como "termine o job atual e saia". O padrão do
-    # Docker é matar 10s depois do SIGTERM — tempo curto demais para um job
-    # real, que seria SIGKILLado no meio e perdido. 60s dá margem para o job
-    # em andamento fechar antes do desligamento.
-    stop_grace_period: 60s
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      app:
-        condition: service_healthy
-    networks: [net]
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f '[h]orizon' > /dev/null"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-  # ---------------------------------------------------------------------------
-  # Scheduler — `schedule:work` substitui a entrada de cron no host.
-  # ---------------------------------------------------------------------------
-  scheduler:
-    container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_scheduler
-    build: *app-build
-    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
-    restart: unless-stopped
-    environment: *app-env
-    volumes: *app-volumes
-    command: ["php", "artisan", "schedule:work"]
-    # Mesmo motivo do worker: uma tarefa agendada em execução precisa de tempo
-    # para terminar antes do SIGKILL.
-    stop_grace_period: 60s
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      app:
-        condition: service_healthy
-    networks: [net]
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f '[s]chedule:work' > /dev/null"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-  # ---------------------------------------------------------------------------
-  # MySQL — porta 3306 NÃO é publicada: a app fala `mysql:3306` pela rede
-  # interna e o acesso humano é pelo phpMyAdmin. Volume nomeado: recriar o
-  # container não pode apagar dados.
+  # MySQL — banco de dados
   # ---------------------------------------------------------------------------
   mysql:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_mysql
@@ -197,8 +81,6 @@ services:
       - mysql_data:/var/lib/mysql
     networks: [net]
     healthcheck:
-      # `mysqladmin ping` responde OK durante o bootstrap do entrypoint, antes
-      # do banco estar utilizável. Aqui a query é real, contra o database da app.
       test:
         - CMD-SHELL
         - mysql -h 127.0.0.1 -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" -D "$$MYSQL_DATABASE" -e 'SELECT 1' > /dev/null 2>&1
@@ -227,7 +109,6 @@ services:
 
   # ---------------------------------------------------------------------------
   # Ferramentas administrativas — só sobem com o profile `tools`.
-  # Publicadas em 127.0.0.1: em 0.0.0.0 seu banco fica exposto à rede local.
   # ---------------------------------------------------------------------------
   phpmyadmin:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_phpmyadmin
