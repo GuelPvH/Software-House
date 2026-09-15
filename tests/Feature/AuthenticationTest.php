@@ -40,7 +40,7 @@ it('rejects invalid credentials', function (): void {
     $this->from(route('login'))
         ->post(route('login.store'), [
             'email' => $user->email,
-            'password' => 'wrong-pass-test-123',
+            'password' => 'incorrect-password',
         ])
         ->assertRedirect(route('login'))
         ->assertSessionHasErrors('email');
