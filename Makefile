@@ -1,5 +1,5 @@
 # =============================================================================
-# Atalhos do ambiente. Este arquivo encapsula Docker e NADA MAIS.
+# Atalhos do ambiente — container monolítico (Apache + PHP + Node).
 #
 # Nenhum alvo invoca php, composer, node, npm ou mysql no host — se algum
 # passar a invocar, o alvo está errado; corrija o alvo, não instale o binário.
@@ -7,18 +7,17 @@
 # Windows sem `make`: use o runner equivalente `.\make.ps1 <alvo>`.
 # =============================================================================
 
-DC        := docker compose
-RUN_APP   := $(DC) run --rm app
-RUN_NODE  := $(DC) run --rm vite
-# `exec` não passa pelo entrypoint, que é quem derruba o privilégio para
-# www-data. Por isso o -u explícito: sem ele, arquivos nasceriam do root.
-EXEC_APP  := $(DC) exec -u www-data app
+DC       := docker compose
+EXEC_APP := $(DC) exec app
+# Para comandos que criam arquivos (artisan, composer), usa www-data para
+# que os arquivos gerados no bind mount pertençam ao usuário correto.
+EXEC_WWW := $(DC) exec -u www-data app
 
 .DEFAULT_GOAL := help
 .PHONY: help setup up down restart build rebuild ps logs logs-app shell shell-root \
         install migrate seed key composer artisan npm test test-coverage lint \
-        lint-fix analyse rector rector-apply insights check nginx-test db-shell \
-        tinker queue-restart fresh destroy db-dump audit hook-install
+        lint-fix analyse rector rector-apply insights check db-shell \
+        tinker fresh destroy db-dump audit hook-install
 
 help: ## Lista os alvos disponíveis
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -30,15 +29,16 @@ help: ## Lista os alvos disponíveis
 setup: ## Instalação completa do zero (idempotente)
 	@test -f .env || cp .env.example .env
 	$(DC) build
-	$(RUN_APP) composer install --no-interaction --prefer-dist
-	$(RUN_NODE) npm ci
+	$(EXEC_WWW) composer install --no-interaction --prefer-dist
+	$(EXEC_APP) npm ci
 	$(DC) up -d
-	$(EXEC_APP) sh -c 'grep -q "^APP_KEY=base64:" .env || php artisan key:generate --force'
-	$(EXEC_APP) php artisan migrate --force
-	$(EXEC_APP) php artisan storage:link --force
-	$(RUN_NODE) npm run build
+	$(EXEC_WWW) sh -c 'grep -q "^APP_KEY=base64:" .env || php artisan key:generate --force'
+	$(EXEC_WWW) php artisan migrate --force
+	$(EXEC_WWW) php artisan storage:link --force
+	$(EXEC_APP) npm run build
 	@echo ""
 	@echo "Pronto. Aplicacao em http://localhost:$${APP_PORT:-8000}"
+	@echo "Para o Vite HMR: docker exec -it $$(docker compose ps -q app) bash -c 'npm run dev'"
 
 up: ## Sobe os containers
 	$(DC) up -d
@@ -62,87 +62,80 @@ ps: ## Estado dos containers
 logs: ## Segue o log de todos os serviços
 	$(DC) logs -f --tail=100
 
-logs-app: ## Segue o log de app, nginx e queue
-	$(DC) logs -f --tail=100 app nginx queue
-
-nginx-test: ## Valida a configuração do nginx
-	$(DC) exec nginx nginx -t
+logs-app: ## Segue o log da aplicação
+	$(DC) logs -f --tail=100 app
 
 # -----------------------------------------------------------------------------
 # Shell e execução
 # -----------------------------------------------------------------------------
-shell: ## Shell no container app como www-data
-	$(EXEC_APP) sh
+shell: ## Shell no container app (como root — igual ao sejus_app)
+	$(EXEC_APP) bash
 
-shell-root: ## Shell no container app como root
-	$(DC) exec app sh
+shell-www: ## Shell no container app como www-data
+	$(EXEC_WWW) bash
 
 db-shell: ## Cliente MySQL dentro do container do banco
 	$(DC) exec mysql sh -c 'mysql -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE"'
 
 tinker: ## REPL do Laravel
-	$(EXEC_APP) php artisan tinker
+	$(EXEC_WWW) php artisan tinker
 
 artisan: ## Comando artisan:  make artisan c="migrate:status"
-	$(EXEC_APP) php artisan $(c)
+	$(EXEC_WWW) php artisan $(c)
 
 composer: ## Comando composer: make composer c="require vendor/pacote"
-	$(RUN_APP) composer $(c)
+	$(EXEC_WWW) composer $(c)
 
-npm: ## Comando npm:      make npm c="install alguma-lib"
-	$(RUN_NODE) npm $(c)
+npm: ## Comando npm:      make npm c="install chart.js"
+	$(EXEC_APP) npm $(c)
 
 install: ## Instala dependências PHP e JS
-	$(RUN_APP) composer install --no-interaction --prefer-dist
-	$(RUN_NODE) npm ci
+	$(EXEC_WWW) composer install --no-interaction --prefer-dist
+	$(EXEC_APP) npm ci
 
 migrate: ## Aplica as migrations
-	$(EXEC_APP) php artisan migrate
+	$(EXEC_WWW) php artisan migrate
 
 seed: ## Roda os seeders
-	$(EXEC_APP) php artisan db:seed
+	$(EXEC_WWW) php artisan db:seed
 
 key: ## Gera a APP_KEY
-	$(EXEC_APP) php artisan key:generate
-
-queue-restart: ## Faz o worker (Horizon) recarregar o código
-	$(EXEC_APP) php artisan horizon:terminate
+	$(EXEC_WWW) php artisan key:generate
 
 # -----------------------------------------------------------------------------
-# Qualidade — a ordem de `check` não é arbitrária (§7.11):
-# formata, revisa refactors, analisa o código já formatado, testa.
+# Qualidade
 # -----------------------------------------------------------------------------
 test: ## Suíte de testes
-	$(EXEC_APP) ./vendor/bin/pest
+	$(EXEC_WWW) ./vendor/bin/pest
 
 test-coverage: ## Testes com cobertura mínima de 80%
-	$(EXEC_APP) ./vendor/bin/pest --coverage --min=80
+	$(EXEC_WWW) ./vendor/bin/pest --coverage --min=80
 
 lint: ## Pint em modo verificação (não altera arquivo) — modo do CI
-	$(EXEC_APP) ./vendor/bin/pint --test
+	$(EXEC_WWW) ./vendor/bin/pint --test
 
 lint-fix: ## Pint corrigindo só o que mudou no git
-	$(EXEC_APP) ./vendor/bin/pint --dirty
+	$(EXEC_WWW) ./vendor/bin/pint --dirty
 
 analyse: ## Análise estática (Larastan/PHPStan)
-	$(EXEC_APP) ./vendor/bin/phpstan analyse --memory-limit=1G
+	$(EXEC_WWW) ./vendor/bin/phpstan analyse --memory-limit=1G
 
 rector: ## Refactors sugeridos, sem aplicar
-	$(EXEC_APP) ./vendor/bin/rector process --dry-run
+	$(EXEC_WWW) ./vendor/bin/rector process --dry-run
 
 rector-apply: ## Aplica os refactors — leia o diff do `make rector` antes
-	$(EXEC_APP) ./vendor/bin/rector process
+	$(EXEC_WWW) ./vendor/bin/rector process
 
 insights: ## PHP Insights (opcional)
-	$(EXEC_APP) ./vendor/bin/phpinsights --no-interaction
+	$(EXEC_WWW) ./vendor/bin/phpinsights --no-interaction
 
 check: lint rector analyse test ## Pipeline completo de qualidade
 
 audit: ## Auditoria Container First — nenhum comando de host na documentacao
-	$(RUN_APP) sh scripts/audit-container-first.sh
+	$(EXEC_APP) sh scripts/audit-container-first.sh
 
 hook-install: ## Ativa os git hooks (CaptainHook) — roda uma vez por clone
-	$(RUN_APP) vendor/bin/captainhook install --force
+	$(EXEC_APP) vendor/bin/captainhook install --force
 
 # -----------------------------------------------------------------------------
 # Destrutivos — exigem confirmação escrita
@@ -153,7 +146,7 @@ fresh: ## APAGA E RECRIA AS TABELAS. Uso: make fresh CONFIRM=yes
 		echo "Se e isso mesmo que voce quer: make fresh CONFIRM=yes"; \
 		exit 1; \
 	fi
-	$(EXEC_APP) php artisan migrate:fresh --seed
+	$(EXEC_WWW) php artisan migrate:fresh --seed
 
 destroy: ## APAGA OS VOLUMES (banco inclusive). Uso: make destroy CONFIRM=yes
 	@if [ "$(CONFIRM)" != "yes" ]; then \
