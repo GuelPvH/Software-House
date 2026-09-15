@@ -1,4 +1,6 @@
 <x-layouts.servicos-deploy title="Deploy - Tecnologia sob medida">
+
+    <x-publico.servicos-deploy.navbar />
     
     <x-publico.servicos-deploy.header />
     

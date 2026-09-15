@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Auth\RequestAccessController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadsOrcamentosController;
 use App\Http\Controllers\Admin\ProjectController;
@@ -14,9 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
-Route::get('/solicitar-acesso', function () {
-    return view('auth.request-access');
-});
+Route::get('/solicitar-acesso', [RequestAccessController::class, 'index']);
+Route::post('/solicitar-acesso', [RequestAccessController::class, 'store']);
 
 Route::get('/deploy/inicio', function () {
     return view('pages.publico.deploy.inicio-deploy');
