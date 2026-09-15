@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LeadsOrcamentosController;
+use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ServicesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +30,21 @@ Route::view('/admin/dashboard', 'pages.admin.dashboard')
 
 Route::view('/admin/projetos', 'pages.admin.projects.index')
     ->name('admin.projects.index');
+
+Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
+    Route::get('/', 'index')->name('index');
+    Route::post('/store', 'store')->name('store');
+    Route::delete('/delete', 'delete')->name('destroy');
+});
+Route::prefix('admin/servicos')->as('admin.services.')->controller(ServicesController::class)->group(function (): void {
+    Route::get('/', 'index')->name('index');
+    Route::post('/store', 'store')->name('store');
+    Route::put('/update/{service}', 'update')->name('update');
+    Route::patch('/unpublish/{id}', 'unpublish')->name('unpublish');
+});
+
+Route::view('/admin/financeiro', 'pages.admin.finance.index')
+    ->name('admin.finance.index');
 
 // A proteção por autenticação será reativada quando o módulo de acesso estiver pronto.
 Route::prefix('admin/configuracoes')
