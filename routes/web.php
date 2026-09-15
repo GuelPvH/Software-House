@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
+Route::get('/solicitar-acesso', function () {
+    return view('auth.request-access');
+});
+
+Route::get('/deploy/inicio', function () {
+    return view('pages.publico.deploy.inicio-deploy');
+});
+
+Route::get('/deploy/servicos', function () {
+    return view('pages.publico.deploy.servicos-deploy');
+});
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
