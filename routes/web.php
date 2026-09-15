@@ -25,10 +25,10 @@ Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::view('/admin/dashboard', 'pages.admin.dashboard')
+Route::get('/admin/dashboard', DashboardController::class)
     ->name('admin.dashboard');
 
-Route::view('/admin/projetos', 'pages.admin.projects.index')
+Route::get('/admin/projetos', ProjectController::class)
     ->name('admin.projects.index');
 
 Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
