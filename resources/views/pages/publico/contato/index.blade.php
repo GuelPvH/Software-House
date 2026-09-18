@@ -20,7 +20,6 @@
     <section class="py-5">
         <div class="container">
             <div class="row g-4">
-                <!-- Coluna esquerda -->
                 <div class="col-12 col-lg-4">
                     <h2 class="h5 fw-bold mb-4">Informações de Contato</h2>
 
@@ -72,40 +71,39 @@
                         </ul>
                     </div>
 
-                    <div class="rounded-4 overflow-hidden" style="height: 160px; background: linear-gradient(135deg, #dbeafe, #eff6ff);">
+                    <div class="rounded-4 overflow-hidden" style="height: 200px; background: linear-gradient(135deg, #dbeafe, #eff6ff);">
                         <div class="d-flex align-items-center justify-content-center h-100 text-primary">
-                            <i class="bi bi-building fs-1"></i>
+                            <img src="{{ asset('images/admin/recepcao.jpg') }}" alt="" class="w-100 h-100 object-fit-cover">
                         </div>
                     </div>
                 </div>
 
-                <!-- Formulário -->
                 <div class="col-12 col-lg-8">
                     <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
-                        <form action="#" method="POST">
+                        <form action="{{ route('publico.contato.store')}}" method="POST">
                             @csrf
 
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
-                                    <label for="nome" class="form-label small fw-semibold">Seu Nome</label>
+                                    <label for="nome" class="form-label small fw-semibold required">Seu Nome</label>
                                     <input type="text" class="form-control" id="nome" name="nome" placeholder="Ex: João Silva">
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label for="empresa" class="form-label small fw-semibold">Empresa</label>
+                                    <label for="empresa" class="form-label small fw-semibold required">Empresa</label>
                                     <input type="text" class="form-control" id="empresa" name="empresa" placeholder="Nome da sua empresa">
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <label for="email" class="form-label small fw-semibold">E-mail Corporativo</label>
+                                    <label for="email" class="form-label small fw-semibold required">E-mail Corporativo</label>
                                     <input type="email" class="form-control" id="email" name="email" placeholder="joao@empresa.com.br">
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label for="whatsapp" class="form-label small fw-semibold">WhatsApp</label>
+                                    <label for="whatsapp" class="form-label small fw-semibold required">WhatsApp</label>
                                     <input type="text" class="form-control" id="whatsapp" name="whatsapp" placeholder="(11) 00000-0000">
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <label for="tipo_projeto" class="form-label small fw-semibold">Tipo de Projeto</label>
+                                    <label for="tipo_projeto" class="form-label small fw-semibold required">Tipo de Projeto</label>
                                     <select class="form-select" id="tipo_projeto" name="tipo_projeto">
                                         <option selected disabled>Selecione uma opção</option>
                                         <option>Sistema Web</option>
@@ -163,7 +161,6 @@
         </div>
     </section>
 
-    <!-- FAQ -->
     <section class="bg-body-tertiary py-5">
         <div class="container">
             <div class="text-center mb-5">
