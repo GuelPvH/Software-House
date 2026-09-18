@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Auth\RequestAccessController;
+use App\Http\Controllers\Admin\ContatosController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadsOrcamentosController;
+use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\PublicProjectsController;
 use App\Http\Controllers\Admin\ServicesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RequestAccessController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -20,27 +23,19 @@ Route::post('/solicitar-acesso', [RequestAccessController::class, 'store']);
 
 Route::get('/deploy/inicio', function () {
     return view('pages.publico.deploy.inicio-deploy');
-});
+})->name('publico.deploy.inicio-deploy');
 
 Route::get('/deploy/servicos', function () {
     return view('pages.publico.deploy.servicos-deploy');
-});
-Route::middleware('guest')->group(function (): void {
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:login')
-        ->name('login.store');
-});
+})->name('publico.deploy.servicos-deploy');
 
 Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::get('/admin/dashboard', DashboardController::class)
-    ->name('admin.dashboard');
+Route::get('/admin/dashboard', DashboardController::class)->name('admin.dashboard');
 
-Route::get('/admin/projetos', ProjectController::class)
-    ->name('admin.projects.index');
+Route::get('/admin/projetos', ProjectController::class)->name('admin.projects.index');
 
 Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
     Route::get('/', 'index')->name('index');
@@ -57,7 +52,6 @@ Route::prefix('admin/servicos')->as('admin.services.')->controller(ServicesContr
 Route::view('/admin/financeiro', 'pages.admin.finance.index')
     ->name('admin.finance.index');
 
-// A proteção por autenticação será reativada quando o módulo de acesso estiver pronto.
 Route::prefix('admin/configuracoes')
     ->name('admin.settings.')
     ->group(function (): void {
@@ -82,8 +76,9 @@ Route::get('/up/deep', function () {
     return response()->json($checks, $healthy ? 200 : 503);
 })->name('health.deep');
 
-Route::view('/contato', 'pages.publico.contato.index')->name('publico.contato.index');
+Route::get('/contato', [ContatosController::class, 'index'])->name('publico.contato.index');
+Route::post('/contato/store', [ContatosController::class, 'store'])->name('publico.contato.store');
 
-Route::view('/projetos', 'pages.publico.projetos.index')->name('publico.projetos.index');
+Route::get('/projetos', [PublicProjectsController::class, 'index'])->name('publico.projetos.index');
 
-Route::view('/admin/login', 'pages.admin.login.index')->name('admin.login.index');
+Route::get('/admin/login', [LoginController::class, 'index'])->name('admin.login.index');

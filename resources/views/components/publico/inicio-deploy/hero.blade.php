@@ -15,12 +15,12 @@
             </p>
             
             <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
-                <button class="btn btn-dark px-4 py-3 fw-medium d-flex align-items-center gap-2 shadow-sm">
+                <a href="{{ route('publico.contato.index') }}" class="btn btn-dark px-4 py-3 fw-medium d-flex align-items-center gap-2 shadow-sm">
                     Solicitar orçamento <i class="fas fa-arrow-right ms-2 fs-6"></i>
-                </button>
-                <button class="btn border px-4 py-3 fw-medium text-dark bg-white">
+                </a>
+                <a href="{{ route('publico.deploy.servicos-deploy') }}" class="btn border px-4 py-3 fw-medium text-dark bg-white">
                     Conhecer nossos serviços
-                </button>
+                </a>
             </div>
         </div>
 
