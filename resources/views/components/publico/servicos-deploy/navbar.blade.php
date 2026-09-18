@@ -6,8 +6,8 @@
         </div>
         
         <div class="d-none d-lg-flex align-items-center gap-4">
-            <a href="http://localhost:8000/deploy/inicio" class="text-primary fw-medium text-decoration-none">Início</a>
-            <a href="http://localhost:8000/deploy/servicos" class="text-secondary fw-medium text-decoration-none">Serviços</a>
+            <a href="http://localhost:8000/deploy/inicio" class="text-secondary fw-medium text-decoration-none">Início</a>
+            <a href="http://localhost:8000/deploy/servicos" class="text-primary fw-medium text-decoration-none">Serviços</a>
             <a href="http://localhost:8000/deploy/projetos" class="text-secondary fw-medium text-decoration-none">Projetos</a>
             <a href="http://localhost:8000/deploy/contato" class="text-secondary fw-medium text-decoration-none">Contato</a>
         </div>

@@ -12,7 +12,21 @@
             </div>
         </div>
         
-        <!-- Formulário Laravel -->
+        @if(session('sucesso'))
+    <!-- Cardzinho -->
+    <div class="text-center py-4">
+        <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 64px; height: 64px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+            </svg>
+        </div>
+        <h3 class="text-dark fs-4 fw-bold mb-2">Solicitação Enviada!</h3>
+        <p class="text-secondary small mb-4">Recebemos seu pedido. Em breve você receberá um e-mail com as instruções.</p>
+        <a href="{{ url('/login') }}" class="btn btn-primary w-100 py-2 fw-semibold" style="border-radius: 10px;">Voltar para o Login</a>
+    </div>
+
+@else
+
         <form action="{{ url('/solicitar-acesso') }}" method="POST" class="d-flex flex-column mb-4">
             @csrf
             
@@ -42,11 +56,12 @@
                 Enviar Solicitação
             </button>
         </form>
+@endif
         
         <x-request-access.divider text="ou" />
 
-        <div class="text-center">
-            <a href="{{ url('/login') }}" class="text-secondary text-decoration-none" style="font-size: 14px;">Já tem acesso? Fazer login</a>
+        <div class="text-center text-secondary" style="font-size: 14px;">
+    Já tem acesso? <a href="{{ url('/login') }}" class="text-primary text-decoration-none">Fazer login</a>
         </div>
     </div>
 

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #ffffff; }
+        .backdrop-blur { backdrop-filter: blur(6px); background-color: rgba(255, 255, 255, 0.9); }
         .code-editor { background-color: #0f172a; box-shadow: 0px 0px 20px 0px rgba(40,120,255,0.15); }
         .text-pink-400 { color: #f472b6; }
         .text-blue-300 { color: #93c5fd; }
