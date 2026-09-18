@@ -12,6 +12,8 @@ final class DashboardController extends Controller
 {
     public function __invoke(DashboardViewModel $viewModel): View
     {
+        session()->now('success', 'Logado com sucesso!');
+
         return view('pages.admin.dashboard', $viewModel->data());
     }
 }

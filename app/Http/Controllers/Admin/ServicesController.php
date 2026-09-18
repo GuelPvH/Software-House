@@ -69,8 +69,6 @@ final class ServicesController extends Controller
 
             return redirect()->route('admin.services.index')->with('success', 'Serviço criado com sucesso!');
         } catch (Throwable $e) {
-            dd($e->getMessage());
-
             return redirect()->back()->withInput()->with('error', 'Erro ao salvar serviço!');
         }
     }
