@@ -38,7 +38,7 @@ final class ServicesController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->merge([
-            'slug' => \Illuminate\Support\Str::slug($request->name ?? '')
+            'slug' => \Illuminate\Support\Str::slug($request->name ?? ''),
         ]);
 
         $data = $request->validate([
@@ -51,7 +51,7 @@ final class ServicesController extends Controller
         ]);
 
         $data['status'] = (int) $request->input('status', 0);
-        
+
         if ($request->has('icon')) {
             $data['icon'] = $request->input('icon');
         }
@@ -59,16 +59,18 @@ final class ServicesController extends Controller
         if (isset($data['features']) && is_string($data['features'])) {
             $data['features'] = array_map('trim', explode(',', $data['features']));
         }
-        
+
         if (isset($data['tags']) && is_string($data['tags'])) {
             $data['tags'] = array_map('trim', explode(',', $data['tags']));
         }
 
         try {
             $this->services->create($data);
+
             return redirect()->route('admin.services.index')->with('success', 'Serviço criado com sucesso!');
         } catch (Throwable $e) {
             dd($e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Erro ao salvar serviço!');
         }
     }
@@ -76,7 +78,7 @@ final class ServicesController extends Controller
     public function update(Request $request, $id): RedirectResponse
     {
         $request->merge([
-            'slug' => \Illuminate\Support\Str::slug($request->name ?? '')
+            'slug' => \Illuminate\Support\Str::slug($request->name ?? ''),
         ]);
 
         $data = $request->validate([
@@ -89,7 +91,7 @@ final class ServicesController extends Controller
         ]);
 
         $data['status'] = (int) $request->input('status', 0);
-        
+
         if ($request->has('icon')) {
             $data['icon'] = $request->input('icon');
         }
@@ -97,7 +99,7 @@ final class ServicesController extends Controller
         if (isset($data['features']) && is_string($data['features'])) {
             $data['features'] = array_map('trim', explode(',', $data['features']));
         }
-        
+
         if (isset($data['tags']) && is_string($data['tags'])) {
             $data['tags'] = array_map('trim', explode(',', $data['tags']));
         }
@@ -105,6 +107,7 @@ final class ServicesController extends Controller
         try {
             $service = $this->services->findOrFail($id);
             $service->update($data);
+
             return redirect()->route('admin.services.index')->with('success', 'Serviço atualizado com sucesso!');
         } catch (Throwable $e) {
             return redirect()->back()->withInput()->with('error', 'Erro ao atualizar serviço!');
@@ -115,7 +118,8 @@ final class ServicesController extends Controller
     {
         try {
             $service = $this->services->findOrFail($id);
-            $service->update(['status' => !$request->status]);
+            $service->update(['status' => ! $request->status]);
+
             return redirect()->route('admin.services.index')->with('success', 'Serviço despublicado com sucesso!');
         } catch (Throwable $e) {
             return redirect()->back()->with('error', 'Erro ao despublicar serviço!');

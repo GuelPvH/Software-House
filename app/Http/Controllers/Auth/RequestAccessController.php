@@ -17,9 +17,9 @@ class RequestAccessController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'email'  => 'required|email|max:255',
-            'name'   => 'required|string|max:255',
-            'termos' => 'accepted', 
+            'email' => 'required|email|max:255',
+            'name' => 'required|string|max:255',
+            'termos' => 'accepted',
         ]);
 
         return back()->with('sucesso', true);
