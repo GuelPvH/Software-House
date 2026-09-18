@@ -47,9 +47,7 @@
                             <p class="text-secondary mb-0" style="font-size: 13px;">Faça login na sua conta Deploy</p>
                         </div>
 
-                        <form method="POST" action="{{ route('login.store') }}">
-                            @csrf
-
+                        <form method="GET" action="{{ route('admin.dashboard')}}">
                             <div class="mb-3">
                                 <label for="email" class="form-label small fw-semibold">Email</label>
                                 <div class="input-group">
