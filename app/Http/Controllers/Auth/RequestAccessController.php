@@ -11,17 +11,17 @@ class RequestAccessController extends Controller
 {
     public function index()
     {
-        return view('auth.request-access');
+        return view('pages.solicitar-acesso.index');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'email'  => 'required|email|max:255',
-            'name'   => 'required|string|max:255',
-            'termos' => 'accepted', 
+            'email' => 'required|email|max:255',
+            'name' => 'required|string|max:255',
+            'termos' => 'accepted',
         ]);
 
-        return redirect()->route('admin.login.index')->with('sucesso', true);
+        return redirect()->route('auth.solicitar-acesso.index')->with('sucesso', true);
     }
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Admin\ContatosController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InicioController;
 use App\Http\Controllers\Admin\LeadsOrcamentosController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\PublicProjectsController;
+use App\Http\Controllers\Admin\PublicServicesController;
 use App\Http\Controllers\Admin\ServicesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RequestAccessController;
@@ -18,16 +20,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
-Route::get('/solicitar-acesso', [RequestAccessController::class, 'index']);
-Route::post('/solicitar-acesso', [RequestAccessController::class, 'store']);
+Route::get('/solicitar-acesso', [RequestAccessController::class, 'index'])->name('auth.solicitar-acesso.index');
+Route::post('/solicitar-acesso', [RequestAccessController::class, 'store'])->name('auth.solicitar-acesso.store');
 
-Route::get('/deploy/inicio', function () {
-    return view('pages.publico.deploy.inicio-deploy');
-})->name('publico.deploy.inicio-deploy');
+Route::get('/inicio', [InicioController::class, 'index'])->name('publico.inicio.index');
 
-Route::get('/deploy/servicos', function () {
-    return view('pages.publico.deploy.servicos-deploy');
-})->name('publico.deploy.servicos-deploy');
+Route::get('/servicos', [PublicServicesController::class, 'index'])->name('publico.servicos.index');
 
 Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')

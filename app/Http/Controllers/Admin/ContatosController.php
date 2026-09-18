@@ -10,7 +10,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
-final class ContatosController extends Controller {
+final class ContatosController extends Controller
+{
     public function index(Request $request): View|string
     {
         return view('pages.publico.contato.index');

@@ -16,5 +16,4 @@ final class DashboardController extends Controller
 
         return view('pages.admin.dashboard', $viewModel->data());
     }
-
 }

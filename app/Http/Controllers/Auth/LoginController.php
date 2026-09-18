@@ -12,7 +12,6 @@ use Throwable;
 
 final class LoginController extends Controller
 {
-
     public function index(Request $request): View|string
     {
         return view('pages.admin.login.index');
