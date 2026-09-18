@@ -8,9 +8,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
-class InicioController extends Controller {
-
-    public function index(Request $request): View|string {
+class InicioController extends Controller
+{
+    public function index(Request $request): View|string
+    {
         return view('pages.publico.inicio.index');
     }
 }
