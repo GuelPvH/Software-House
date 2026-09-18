@@ -11,7 +11,7 @@ class RequestAccessController extends Controller
 {
     public function index()
     {
-        return view('Auth.request-access');
+        return view('auth.request-access');
     }
 
     public function store(Request $request)
@@ -22,6 +22,6 @@ class RequestAccessController extends Controller
             'termos' => 'accepted', 
         ]);
 
-        return back()->with('sucesso', true);
+        return redirect()->route('admin.login.index')->with('sucesso', true);
     }
 }
