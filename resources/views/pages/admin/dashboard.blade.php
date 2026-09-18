@@ -1,36 +1,5 @@
 <x-admin.layout title="Dashboard" page="Dashboard">
-    <h1 class="visually-hidden">Dashboard administrativo</h1>
-
-    <section class="row g-3 mb-3" aria-label="Indicadores gerais">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <x-admin.stat-card label="Leads este mês" value="28" icon="bi-person-plus-fill" tone="blue" note="+12% este mês" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <x-admin.stat-card label="Projetos Ativos" value="7" icon="bi-file-earmark-text-fill" tone="purple" note="em andamento" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <x-admin.stat-card label="Receita Total" value="R$ 142.500" icon="bi-check-circle-fill" tone="green" note="este mês" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <x-admin.stat-card label="Taxa de Conversão" value="32%" icon="bi-hourglass-split" tone="yellow" note="leads → projetos" />
-        </div>
-    </section>
-
-    <section class="row g-3 mb-3" aria-label="Gráficos do dashboard">
-        <div class="col-12 col-xl-9">
-            <x-admin.bar-chart />
-        </div>
-        <div class="col-12 col-xl-3">
-            <x-admin.status-chart />
-        </div>
-    </section>
-
-    <section class="row g-3" aria-label="Atividades e leads recentes">
-        <div class="col-12 col-xxl-6">
-            <x-admin.activity-feed />
-        </div>
-        <div class="col-12 col-xxl-6">
-            <x-admin.leads-table />
-        </div>
-    </section>
+<div class="d-flex justify-content-between align-items-start mb-4"><div><p class="text-primary fw-semibold mb-1">Visão do {{ $role->label() }}</p><h1 class="h3">Seu trabalho, em tempo real</h1><p class="text-secondary">Indicadores calculados com os registros do sistema.</p></div><span class="badge text-bg-light">{{ now()->timezone(auth()->user()->preferences['timezone']??'America/Manaus')->format('d/m/Y H:i') }}</span></div>
+<div class="row g-3 mb-4">@foreach($metrics as $label=>$value)<div class="col-sm-6 col-xl-3"><div class="card h-100 border-0 shadow-sm p-4"><span class="text-secondary small">{{ $label }}</span><strong class="fs-3 mt-2">{{ $value }}</strong></div></div>@endforeach</div>
+<div class="card border-0 shadow-sm p-4"><h2 class="h5 mb-3">{{ $role->value==='technical_admin' ? 'Auditoria recente' : 'Registros recentes' }}</h2>@forelse($records as $record)<div class="border-bottom py-3"><strong>{{ $record['title'] }}</strong><div class="small text-secondary">{{ $record['detail'] }}</div></div>@empty<p class="text-secondary mb-0">Ainda não há registros para o seu perfil.</p>@endforelse</div>
 </x-admin.layout>

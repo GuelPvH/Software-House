@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
+
+beforeEach(function (): void {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+});
+
 it('renders the shared administrative shell', function (string $route): void {
     $this->get(route($route))
         ->assertOk()
         ->assertSee('Menu administrativo')
         ->assertSee('Abrir menu')
-        ->assertSee('Buscar')
-        ->assertSee('Notificações não lidas');
+        ->assertSee('Gestor');
 })->with([
     'dashboard' => ['admin.dashboard'],
     'projects' => ['admin.projects.index'],

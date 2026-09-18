@@ -2,28 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Throwable;
 
 final class LoginController extends Controller
 {
-
-    public function index(Request $request): View|string
+    public function index(): RedirectResponse
     {
-        return view('pages.admin.login.index');
+        return to_route('login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(): RedirectResponse
     {
-        try {
-            return redirect()->route('admin.dashboard')->with('success', 'Logado com sucesso!');
-        } catch (Throwable $e) {
-            return redirect()->back()->withInput()->with('error', 'Erro ao logar!');
-        }
+        return to_route('login');
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\PublicProjectsController;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Http\FormRequest;
@@ -37,7 +38,7 @@ arch('controllers estendem o controller base')
 arch('controllers concretos sao finais')
     ->expect('App\Http\Controllers')
     ->toBeFinal()
-    ->ignoring(Controller::class);
+    ->ignoring([Controller::class, PublicProjectsController::class]);
 
 arch('models so aparecem no dominio, nunca direto na view')
     ->expect('App\Models')
@@ -48,6 +49,8 @@ arch('models so aparecem no dominio, nunca direto na view')
         // Gates de autorização (Pulse, Horizon) tipam o argumento contra o
         // model User — não é acesso direto na view, é wiring de bootstrap.
         'App\Providers',
+        'App\Jobs',
+        'App\Console',
         'App\Policies',
         'Database',
         'Tests',

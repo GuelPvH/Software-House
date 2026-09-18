@@ -81,12 +81,14 @@
                             <span class="fw-bold d-block text-dark" style="font-size: 13px;">{{ $leadPrazo }}</span>
                         </div>
                     </div>
+                    @if(auth()->user()->canModule('finance'))
                     <div class="col-6">
                         <div class="bg-light rounded-3 p-2 px-3 h-100">
                             <span class="text-secondary d-block mb-1" style="font-size: 11px;">Orçamento</span>
                             <span class="text-success fw-bold d-block" style="font-size: 13px;">{{ $leadValue }}</span>
                         </div>
                     </div>
+                    @endif
                     <div class="col-6">
                         <div class="bg-light rounded-3 p-2 px-3 h-100">
                             <span class="text-secondary d-block mb-1" style="font-size: 11px;">Prioridade</span>

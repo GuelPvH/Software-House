@@ -1,24 +1,15 @@
 <?php
 
 declare(strict_types=1);
-
+use App\Models\Board;
+use App\Models\Client;
 use App\Models\User;
 
-it('renders the project workspace for an administrator', function (): void {
-    $admin = User::factory()->create(['is_admin' => true]);
-
-    $this->actingAs($admin)
-        ->get(route('admin.projects.index'))
-        ->assertOk()
-        ->assertSee('Gerencie todos os projetos ativos e históricos')
-        ->assertSee('Sistema ERP Industrial')
-        ->assertSee('Dashboard Analytics BI')
-        ->assertSee('class="card project-card', escape: false)
-        ->assertSee('aria-current="page"', escape: false);
+it('renders real projects instead of sample projects', function (): void {
+    $user = User::factory()->create(['is_admin' => true]);
+    Board::create(['name' => 'Projeto persistido', 'client_id' => Client::create(['name' => 'Cliente real'])->id, 'responsible_id' => $user->id]);
+    $this->actingAs($user)->get(route('admin.projects.index'))->assertOk()->assertSee('Projeto persistido')->assertDontSee('Sistema ERP Industrial');
 });
-
-it('temporarily renders the project workspace without authentication', function (): void {
-    $this->get(route('admin.projects.index'))
-        ->assertOk()
-        ->assertSee('Gerencie todos os projetos ativos e históricos');
+it('requires authentication for projects', function (): void {
+    $this->get(route('admin.projects.index'))->assertRedirect(route('login'));
 });

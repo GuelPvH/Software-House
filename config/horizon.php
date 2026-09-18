@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\InternalAccess;
 use Illuminate\Support\Str;
 
 return [
@@ -85,7 +86,7 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    'middleware' => ['web', 'auth', InternalAccess::class.':technical'],
 
     /*
     |--------------------------------------------------------------------------

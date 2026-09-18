@@ -312,6 +312,7 @@
                     <input type="date" class="form-control" id="lead-deadline" name="deadline"
                         value="{{ old('deadline') }}" required>
                 </div>
+                @if(auth()->user()->canModule('finance'))
                 <div class="col-12 col-md-4">
                     <label for="lead-estimated-value" class="form-label small fw-medium text-secondary">Valor Estimado
                         (R$)</label>
@@ -319,6 +320,7 @@
                         id="lead-estimated-value" name="estimated_value" value="{{ old('estimated_value') }}"
                         placeholder="0.00" required>
                 </div>
+                @endif
                 <div class="col-12">
                     <label for="lead-objective" class="form-label small fw-medium text-secondary">Objetivo /
                         Descrição</label>

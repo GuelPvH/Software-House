@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
+
+beforeEach(function (): void {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+});
+
 it('renders every settings section', function (string $route, string $content): void {
     $this->get(route($route))
         ->assertOk()

@@ -47,7 +47,9 @@
                             <p class="text-secondary mb-0" style="font-size: 13px;">Faça login na sua conta Deploy</p>
                         </div>
 
-                        <form method="GET" action="{{ route('admin.dashboard')}}">
+                        @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+                        <form method="POST" action="{{ route('login.store') }}">
+                            @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label small fw-semibold">Email</label>
                                 <div class="input-group">
@@ -93,7 +95,7 @@
                             </div>
 
                             <div class="text-end mb-3">
-                                <a href="#" class="text-primary text-decoration-none fw-medium" style="font-size: 12px;">
+                                <a href="{{ route('password.request') }}" class="text-primary text-decoration-none fw-medium" style="font-size: 12px;">
                                     Esqueceu a senha?
                                 </a>
                             </div>
@@ -112,7 +114,7 @@
 
                         <p class="text-center text-secondary mt-4 mb-0" style="font-size: 12px;">
                             Não tem acesso?
-                            <a href="{{ route('publico.contato.index') }}" class="text-primary text-decoration-none fw-medium">Solicitar acesso</a>
+                            <a href="{{ route('access.index') }}" class="text-primary text-decoration-none fw-medium">Solicitar acesso</a>
                         </p>
                     </div>
                 </div>

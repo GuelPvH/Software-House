@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\VehicleApiController;
+use App\Http\Middleware\ActiveAccount;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,11 +29,12 @@ Route::apiResource('vehicles', VehicleApiController::class)
     ->names('api.vehicles');
 
 // Rotas que exigem autenticação (Sanctum)
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', ActiveAccount::class])->group(function (): void {
     Route::get('/user', fn (Request $request): UserResource => new UserResource($request->user()))
         ->name('api.user');
 
     Route::apiResource('vehicles', VehicleApiController::class)
         ->only(['store', 'update', 'destroy'])
+        ->middleware('abilities:vehicles:write')
         ->names('api.vehicles');
 });

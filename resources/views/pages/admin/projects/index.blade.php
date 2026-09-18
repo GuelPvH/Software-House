@@ -1,92 +1,22 @@
-@php
-    $columns = [
-        [
-            'title' => 'Em Análise',
-            'tone' => 'slate',
-            'projects' => [
-                ['title' => 'Prontuário Eletrônico', 'company' => 'Saúde Tech', 'priority' => 'Alta', 'type' => 'Sistema Web', 'typeTone' => 'blue', 'owner' => 'Beatriz Rocha', 'start' => 'Início: 10 Jun', 'end' => '90 dias', 'value' => 'R$ 28.000', 'technologies' => ['React', 'Node', 'MongoDB'], 'avatars' => [1], 'progress' => 0, 'accent' => 'slate'],
-                ['title' => 'Plataforma de Ensino EduPlat', 'company' => 'Rafael Moura', 'priority' => 'Média', 'type' => 'Software Custom', 'typeTone' => 'purple', 'owner' => 'Rafael Moura', 'start' => 'Início: 9 Jun', 'end' => '120 dias', 'value' => 'R$ 45.000', 'technologies' => ['Next.js', 'PostgreSQL'], 'avatars' => [3], 'progress' => 0, 'accent' => 'slate'],
-            ],
-        ],
-        [
-            'title' => 'Em Andamento',
-            'tone' => 'blue',
-            'projects' => [
-                ['title' => 'Sistema ERP Industrial', 'company' => 'Ind. Moderna', 'priority' => 'Alta', 'critical' => true, 'type' => 'Sistemas Web', 'typeTone' => 'blue', 'owner' => 'Pedro Costa', 'start' => '1 Abr', 'end' => '15 Jul', 'value' => 'R$ 85.000', 'technologies' => ['React', 'Node'], 'avatars' => [4, 8], 'progress' => 78, 'accent' => 'blue'],
-                ['title' => 'Plataforma CRM Comercial', 'company' => 'Logística SA', 'priority' => 'Alta', 'type' => 'Software Custom', 'typeTone' => 'purple', 'owner' => 'Maria Santos', 'start' => '15 Mar', 'end' => 'Em andamento', 'value' => 'R$ 62.000', 'technologies' => ['Vue.js', 'Laravel'], 'avatars' => [5, 9], 'progress' => 45, 'accent' => 'indigo'],
-                ['title' => 'API Gateway Financeiro', 'company' => 'TechBR', 'priority' => 'Média', 'type' => 'APIs', 'typeTone' => 'orange', 'owner' => 'João Silva', 'start' => '1 Mai', 'end' => 'Em andamento', 'value' => 'R$ 38.000', 'technologies' => ['Node', 'AWS'], 'avatars' => [2, 6], 'progress' => 60, 'accent' => 'purple'],
-            ],
-        ],
-        [
-            'title' => 'Em Revisão',
-            'tone' => 'yellow',
-            'projects' => [
-                ['title' => 'Dashboard Analytics BI', 'company' => 'FinTech Plus', 'priority' => 'Alta', 'critical' => true, 'type' => 'Dashboards', 'typeTone' => 'teal', 'owner' => 'Carlos Mendes', 'start' => '10 Fev', 'end' => '20 Jun', 'value' => 'R$ 52.000', 'technologies' => ['Python', 'Tableau'], 'avatars' => [3, 7], 'progress' => 92, 'accent' => 'green'],
-            ],
-        ],
-        [
-            'title' => 'Entregue',
-            'tone' => 'green',
-            'projects' => [
-                ['title' => 'Landing Page Conversão', 'company' => 'Varejo Digital', 'completed' => true, 'type' => 'Landing Pages', 'typeTone' => 'pink', 'owner' => 'Ana Lima', 'start' => 'Entregue: 1 Jun', 'value' => 'R$ 12.000', 'technologies' => ['HTML', 'Webflow'], 'avatars' => [6], 'progress' => 100, 'accent' => 'green'],
-                ['title' => 'Sistema de Gestão RH', 'company' => 'AgriTech', 'completed' => true, 'type' => 'Sistemas Web', 'typeTone' => 'blue', 'owner' => 'Camila Nunes', 'start' => 'Entregue: 15 Mai', 'value' => 'R$ 34.000', 'technologies' => ['React', 'Django'], 'avatars' => [1, 7], 'progress' => 100, 'accent' => 'green'],
-            ],
-        ],
-    ];
-@endphp
-
-<x-admin.layout title="Projetos" page="Projetos">
-    <div class="projects-page">
-        <header class="projects-heading">
-            <h1>Projetos</h1>
-            <p>Gerencie todos os projetos ativos e históricos</p>
-        </header>
-
-        <section class="row g-3 g-xl-4 projects-metrics" aria-label="Indicadores de projetos">
-            <div class="col-12 col-sm-6 col-xl-3"><x-admin.projects.metric-card label="Total de Projetos" value="7" note="ativos no momento" icon="bi-briefcase-fill" /></div>
-            <div class="col-12 col-sm-6 col-xl-3"><x-admin.projects.metric-card label="Em Andamento" value="3" note="projetos em execução" icon="bi-hourglass-split" tone="orange" /></div>
-            <div class="col-12 col-sm-6 col-xl-3"><x-admin.projects.metric-card label="Entregues" value="12" note="projetos histórico" icon="bi-check-circle-fill" tone="green" /></div>
-            <div class="col-12 col-sm-6 col-xl-3"><x-admin.projects.metric-card label="Prazo Crítico" value="2" note="entrega em &lt;15 dias" icon="bi-exclamation-triangle-fill" tone="red" /></div>
-        </section>
-
-        <x-admin.projects.toolbar />
-
-        <div class="project-board-scroll" tabindex="0" aria-label="Quadro Kanban de projetos">
-            <div class="project-board">
-                @foreach ($columns as $column)
-                    <x-admin.projects.kanban-column :title="$column['title']" :count="count($column['projects'])" :tone="$column['tone']">
-                        @foreach ($column['projects'] as $project)
-                            <x-admin.projects.project-card
-                                :title="$project['title']"
-                                :company="$project['company']"
-                                :priority="$project['priority'] ?? null"
-                                :critical="$project['critical'] ?? false"
-                                :completed="$project['completed'] ?? false"
-                                :type="$project['type']"
-                                :type-tone="$project['typeTone']"
-                                :owner="$project['owner']"
-                                :start="$project['start']"
-                                :end="$project['end'] ?? null"
-                                :value="$project['value']"
-                                :technologies="$project['technologies']"
-                                :avatars="$project['avatars']"
-                                :progress="$project['progress']"
-                                :accent="$project['accent']"
-                            />
-                        @endforeach
-                    </x-admin.projects.kanban-column>
-                @endforeach
-            </div>
-        </div>
-
-        <footer class="project-timeline d-flex flex-wrap align-items-center gap-3">
-            <button type="button" class="btn project-timeline-button">
-                <i class="bi bi-diagram-3-fill" aria-hidden="true"></i>
-                <span>Linha do Tempo</span>
-                <span class="badge">Visualização Gantt</span>
-                <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            </button>
-            <p class="mb-0">Visualize o cronograma completo de todos os projetos em um gráfico Gantt interativo</p>
-        </footer>
-    </div>
+<x-admin.layout title="Kanban" page="Projetos / Kanban">
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><div><h1 class="h3">Projetos e Kanban</h1><p class="text-secondary mb-0">Organize tarefas, acompanhe prazos e colabore com a equipe.</p></div>@can('create',App\Models\Board::class)<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newBoard">Novo projeto</button>@endcan</div>
+<div class="d-flex flex-wrap gap-2 mb-4">@foreach($boards as $item)<a class="btn {{ $board?->id===$item->id?'btn-dark':'btn-outline-secondary' }}" href="{{ route('admin.projects.index',['board'=>$item->id]) }}">{{ $item->name }}</a>@endforeach</div>
+@if($board)
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-3"><div><h2 class="h5 mb-1">{{ $board->name }}</h2><span class="small text-secondary">{{ $board->client_name }} · {{ $board->members->count() }} membros</span></div><div class="d-flex gap-2">@can('manage',$board)<button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editBoard">Editar projeto e membros</button><button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newColumn">Adicionar lista</button>@endcan</div></div>
+<div id="kanban-status" class="small text-secondary mb-2" role="status" aria-live="polite">Arraste os cartões entre listas. Para usar o teclado, abra o cartão e altere a lista.</div>
+<div id="live-kanban" aria-label="Quadro Kanban de projetos" class="d-flex gap-3 align-items-start pb-4" style="overflow-x:auto;min-height:420px" data-url="{{ route('admin.projects.move',$board) }}" data-version="{{ $board->version }}">
+@foreach($board->columns as $column)<section class="kanban-live-column rounded-3 p-3" style="min-width:285px;width:300px;background:var(--bs-tertiary-bg);flex-shrink:0" data-column-id="{{ $column->id }}"><h3 class="h6 d-flex justify-content-between">{{ $column->name }}<span class="badge text-bg-secondary">{{ $column->cards->count() }}</span></h3>@can('manage',$board)<details class="mb-2"><summary class="small text-secondary">Editar lista</summary><form method="POST" action="{{ route('admin.projects.columns.update',[$board,$column]) }}" class="pt-2">@csrf @method('PATCH')<label class="form-label w-100 small">Nome<input class="form-control form-control-sm" name="name" value="{{ $column->name }}" required></label><label class="small d-block mb-2"><input type="checkbox" name="is_done" value="1" @checked($column->is_done)> Lista de conclusão</label><button class="btn btn-sm btn-outline-primary">Salvar lista</button></form></details>@endcan<div class="kanban-live-list" style="min-height:90px" data-list="{{ $column->id }}">
+@foreach($column->cards as $card)<article class="card shadow-sm border-0 mb-3 kanban-live-card" draggable="true" data-card-id="{{ $card->id }}"><button class="btn text-start p-3" data-bs-toggle="modal" data-bs-target="#card{{ $card->id }}"><div class="d-flex flex-wrap gap-1 mb-2">@foreach($card->labels??[] as $label)<span class="badge text-bg-primary">{{ $label }}</span>@endforeach</div><strong class="d-block mb-2">{{ $card->title }}</strong><div class="small text-secondary">{{ $card->assignee?->name??'Sem responsável' }}</div><div class="d-flex justify-content-between mt-2 small"><span class="{{ $card->priority==='high'?'text-danger':'text-secondary' }}">{{ ['high'=>'Alta','medium'=>'Média','low'=>'Baixa'][$card->priority]??$card->priority }}</span><span>{{ $card->due_date?->format('d/m')??'Sem prazo' }}</span></div><div class="small text-secondary mt-2">{{ $card->comments->count() }} comentários · {{ $card->checklist->where('completed',true)->count() }}/{{ $card->checklist->count() }} itens</div></button></article>@endforeach
+</div><button class="btn btn-sm btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#newCard{{ $column->id }}">+ Adicionar cartão</button></section>@endforeach</div>
+<details class="card p-3 mb-4"><summary>Cartões arquivados ({{ $archived->count() }})</summary>@forelse($archived as $archivedCard)<form method="POST" class="d-flex justify-content-between align-items-center py-2" action="{{ route('admin.projects.cards.restore',[$board,$archivedCard->id]) }}">@csrf<span>{{ $archivedCard->title }}</span><button class="btn btn-sm btn-outline-primary">Restaurar</button></form>@empty<p class="text-secondary mt-2 mb-0">Nenhum cartão arquivado.</p>@endforelse</details>
+@foreach($board->columns as $column)
+<div class="modal fade" id="newCard{{ $column->id }}" tabindex="-1" aria-labelledby="newCardTitle{{ $column->id }}"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="{{ route('admin.projects.cards.store',$board) }}">@csrf<div class="modal-header"><h2 class="modal-title fs-5" id="newCardTitle{{ $column->id }}">Novo cartão</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body">@include('pages.admin.projects.card-form',['editing'=>null,'selectedColumn'=>$column->id])</div><div class="modal-footer"><button class="btn btn-primary">Criar cartão</button></div></form></div></div></div>
+@foreach($column->cards as $card)<div class="modal fade" id="card{{ $card->id }}" tabindex="-1" aria-labelledby="cardTitle{{ $card->id }}"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="cardTitle{{ $card->id }}">Editar cartão</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body"><form method="POST" action="{{ route('admin.projects.cards.update',[$board,$card]) }}">@csrf @method('PATCH')<input type="hidden" name="version" value="{{ $card->version }}">@include('pages.admin.projects.card-form',['editing'=>$card,'selectedColumn'=>$card->stage_id])<button class="btn btn-primary mb-4">Salvar cartão</button></form>
+<h3 class="h6">Checklist</h3>@foreach($card->checklist as $item)<form class="d-flex align-items-center gap-2 mb-2" method="POST" action="{{ route('admin.projects.checklist.toggle',[$board,$card,$item]) }}">@csrf @method('PATCH')<input type="hidden" name="completed" value="{{ $item->completed?0:1 }}"><button class="btn btn-sm btn-outline-secondary" aria-label="{{ $item->completed?'Desmarcar':'Concluir' }} {{ $item->title }}">{{ $item->completed?'✓':'○' }}</button><span class="{{ $item->completed?'text-decoration-line-through':'' }}">{{ $item->title }}</span></form>@endforeach
+<form class="input-group mb-4" method="POST" action="{{ route('admin.projects.checklist',[$board,$card]) }}">@csrf<input class="form-control" name="title" placeholder="Novo item" aria-label="Novo item de checklist" maxlength="200" required><button class="btn btn-outline-primary">Adicionar</button></form>
+<h3 class="h6">Comentários</h3>@foreach($card->comments as $comment)<div class="border rounded p-2 mb-2"><strong class="small">{{ $comment->author?->name }}</strong><p class="mb-0" style="white-space:pre-wrap">{{ $comment->content }}</p></div>@endforeach<form method="POST" action="{{ route('admin.projects.comments',[$board,$card]) }}">@csrf<textarea class="form-control mb-2" name="body" aria-label="Novo comentário" placeholder="Escreva um comentário" maxlength="4000" required></textarea><button class="btn btn-outline-primary">Comentar</button></form>
+<form class="mt-4" method="POST" action="{{ route('admin.projects.cards.archive',[$board,$card]) }}">@csrf @method('DELETE')<button class="btn btn-outline-danger btn-sm">Arquivar cartão</button></form></div></div></div></div>@endforeach @endforeach
+@can('manage',$board)<div class="modal fade" id="editBoard" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="{{ route('admin.projects.update',$board) }}">@csrf @method('PATCH')<div class="modal-header"><h2 class="fs-5">Editar projeto</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body">@include('pages.admin.projects.board-form',['editingBoard'=>$board])</div><div class="modal-footer"><button class="btn btn-primary">Salvar projeto</button></div></form></div></div></div><div class="modal fade" id="newColumn" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="{{ route('admin.projects.columns',$board) }}">@csrf<div class="modal-header"><h2 class="fs-5">Adicionar lista</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body"><label class="form-label w-100">Nome da lista<input class="form-control" name="name" maxlength="100" required></label></div><div class="modal-footer"><button class="btn btn-primary">Adicionar</button></div></form></div></div></div>@endcan
+@else<div class="card p-5 text-center"><h2 class="h5">Nenhum projeto disponível</h2><p class="text-secondary">Os projetos aparecerão aqui quando você participar de um quadro.</p></div>@endif
+@can('create',App\Models\Board::class)<div class="modal fade" id="newBoard" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="{{ route('admin.projects.store') }}">@csrf<div class="modal-header"><h2 class="fs-5">Novo projeto</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body">@include('pages.admin.projects.board-form',['editingBoard'=>null])</div><div class="modal-footer"><button class="btn btn-primary">Criar projeto</button></div></form></div></div></div>@endcan
 </x-admin.layout>

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\InternalAccess;
 use Laravel\Pulse\Http\Middleware\Authorize;
 use Laravel\Pulse\Pulse;
 use Laravel\Pulse\Recorders\CacheInteractions;
@@ -133,6 +134,8 @@ return [
 
     'middleware' => [
         'web',
+        'auth',
+        InternalAccess::class.':technical',
         Authorize::class,
     ],
 

@@ -3,14 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\ContatosController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\LeadsOrcamentosController;
-use App\Http\Controllers\Admin\LoginController;
-use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\PublicProjectsController;
-use App\Http\Controllers\Admin\ServicesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RequestAccessController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -18,49 +12,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
-Route::get('/solicitar-acesso', [RequestAccessController::class, 'index']);
-Route::post('/solicitar-acesso', [RequestAccessController::class, 'store']);
+Route::get('/deploy/inicio', fn () => view('pages.publico.deploy.inicio-deploy'))->name('publico.deploy.inicio-deploy');
 
-Route::get('/deploy/inicio', function () {
-    return view('pages.publico.deploy.inicio-deploy');
-})->name('publico.deploy.inicio-deploy');
-
-Route::get('/deploy/servicos', function () {
-    return view('pages.publico.deploy.servicos-deploy');
-})->name('publico.deploy.servicos-deploy');
+Route::get('/deploy/servicos', fn () => view('pages.publico.deploy.servicos-deploy'))->name('publico.deploy.servicos-deploy');
 
 Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
-
-Route::get('/admin/dashboard', DashboardController::class)->name('admin.dashboard');
-
-Route::get('/admin/projetos', ProjectController::class)->name('admin.projects.index');
-
-Route::prefix('admin/leads-orcamentos')->as('admin.leads.')->controller(LeadsOrcamentosController::class)->group(function (): void {
-    Route::get('/', 'index')->name('index');
-    Route::post('/store', 'store')->name('store');
-    Route::delete('/delete', 'delete')->name('destroy');
-});
-Route::prefix('admin/servicos')->as('admin.services.')->controller(ServicesController::class)->group(function (): void {
-    Route::get('/', 'index')->name('index');
-    Route::post('/store', 'store')->name('store');
-    Route::put('/update/{service}', 'update')->name('update');
-    Route::patch('/unpublish/{id}', 'unpublish')->name('unpublish');
-});
-
-Route::view('/admin/financeiro', 'pages.admin.finance.index')
-    ->name('admin.finance.index');
-
-Route::prefix('admin/configuracoes')
-    ->name('admin.settings.')
-    ->group(function (): void {
-        Route::view('/', 'pages.admin.settings.profile')->name('profile');
-        Route::view('/empresa', 'pages.admin.settings.company')->name('company');
-        Route::view('/notificacoes', 'pages.admin.settings.notifications')->name('notifications');
-        Route::view('/seguranca', 'pages.admin.settings.security')->name('security');
-        Route::view('/integracoes', 'pages.admin.settings.integrations')->name('integrations');
-    });
 
 Route::view('/publico', 'pages.publico.index')->name('publico.index');
 
@@ -81,4 +39,4 @@ Route::post('/contato/store', [ContatosController::class, 'store'])->name('publi
 
 Route::get('/projetos', [PublicProjectsController::class, 'index'])->name('publico.projetos.index');
 
-Route::get('/admin/login', [LoginController::class, 'index'])->name('admin.login.index');
+require __DIR__.'/internal.php';

@@ -1,49 +1,5 @@
-<x-admin.settings.layout active="security">
-    <div class="settings-grid">
-        <form class="settings-column" aria-label="Configurações de segurança">
-            <x-admin.settings.section-card id="password" title="Alterar Senha" subtitle="Use uma senha forte e exclusiva para sua conta" icon="bi-lock-fill">
-                <x-form.field id="current-password" name="current_password" label="Senha atual">
-                    <x-form.input id="current-password" name="current_password" type="password" placeholder="Digite sua senha atual" autocomplete="current-password" />
-                </x-form.field>
-                <x-form.field id="new-password" name="password" label="Nova senha" help="Mínimo de 8 caracteres">
-                    <x-form.input id="new-password" name="password" type="password" placeholder="Crie uma nova senha" autocomplete="new-password" />
-                </x-form.field>
-                <x-form.field id="confirm-password" name="password_confirmation" label="Confirmar senha">
-                    <x-form.input id="confirm-password" name="password_confirmation" type="password" placeholder="Repita a nova senha" autocomplete="new-password" />
-                </x-form.field>
-            </x-admin.settings.section-card>
-
-            <x-admin.settings.section-card id="two-factor" title="Autenticação em Duas Etapas" subtitle="Adicione uma camada extra de proteção ao acesso" icon="bi-shield-lock-fill" tone="purple">
-                <div class="settings-option">
-                    <div><h3>Aplicativo autenticador</h3><p>Use códigos temporários gerados no seu celular.</p></div>
-                    <button type="button" class="btn btn-outline-primary btn-sm">Configurar</button>
-                </div>
-                <div class="settings-option">
-                    <div><h3>Códigos de recuperação</h3><p>Gere códigos para recuperar a conta sem o dispositivo.</p></div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Gerar códigos</button>
-                </div>
-            </x-admin.settings.section-card>
-
-            <div class="settings-save-bar">
-                <button type="button" class="btn btn-primary"><i class="bi bi-shield-check me-2" aria-hidden="true"></i>Atualizar Segurança</button>
-            </div>
-        </form>
-
-        <aside class="settings-column settings-sidebar" aria-label="Sessões e segurança">
-            <x-admin.settings.section-card title="Nível de Segurança" class="settings-side-card">
-                <x-ui.detail-row title="Segurança média" meta="Ative a autenticação 2FA" icon="bi-shield-exclamation" tone="yellow" class="mb-3" />
-                <x-ui.progress value="66" label="Nível de segurança" tone="warning" />
-            </x-admin.settings.section-card>
-
-            <x-admin.settings.section-card title="Sessão Atual" class="settings-side-card">
-                <x-ui.detail-row title="Chrome · Windows" meta="São Paulo, Brasil · Agora" icon="bi-laptop-fill" class="mb-3" />
-                <x-ui.badge tone="success"><span class="settings-status-dot me-1"></span>Esta sessão</x-ui.badge>
-            </x-admin.settings.section-card>
-
-            <x-admin.settings.section-card title="Zona de Risco" class="settings-side-card border-danger-subtle">
-                <p class="ui-detail-meta">Encerre todos os acessos ativos, incluindo este dispositivo.</p>
-                <button type="button" class="btn btn-outline-danger btn-sm w-100"><i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i> Encerrar sessões</button>
-            </x-admin.settings.section-card>
-        </aside>
-    </div>
-</x-admin.settings.layout>
+<x-admin.settings.layout active="security"><div class="settings-grid"><div class="settings-column"><x-admin.settings.section-card title="Alterar Senha" icon="bi-lock"><form method="POST" action="{{ route('admin.settings.security.save') }}">@csrf<label class="form-label w-100">Senha atual<input class="form-control" type="password" name="current_password" autocomplete="current-password" required></label><label class="form-label w-100">Nova senha<input class="form-control" type="password" name="password" autocomplete="new-password" minlength="12" required></label><label class="form-label w-100">Confirmar nova senha<input class="form-control" type="password" name="password_confirmation" autocomplete="new-password" required></label><p class="small text-secondary">Mínimo de 12 caracteres com letras e números.</p><button class="btn btn-primary">Atualizar segurança</button></form></x-admin.settings.section-card>
+<x-admin.settings.section-card title="Autenticação em Duas Etapas" icon="bi-shield-lock">@if($user->totp_confirmed_at)<p class="text-success">Autenticador ativado.</p><form method="POST" action="{{ route('admin.settings.two-factor.recovery') }}">@csrf<label class="form-label w-100">Senha atual<input class="form-control" type="password" name="current_password" required></label><button class="btn btn-outline-primary mb-3">Gerar novos códigos de recuperação</button></form><form method="POST" action="{{ route('admin.settings.two-factor.disable') }}">@csrf<label class="form-label w-100">Senha atual<input class="form-control" type="password" name="current_password" required></label><button class="btn btn-outline-danger">Desativar duas etapas</button></form>@else
+@if(session('totp_setup'))<p>Adicione uma conta no aplicativo autenticador usando esta chave:</p><code class="d-block text-break mb-3">{{ session('totp_setup') }}</code><p class="small">Tipo: baseado em tempo (TOTP), 6 dígitos, intervalo de 30 segundos, SHA-1.</p><form method="POST" action="{{ route('admin.settings.two-factor.confirm') }}">@csrf<label class="form-label w-100">Código do aplicativo<input class="form-control" name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required></label><button class="btn btn-primary">Confirmar ativação</button></form>@else<form method="POST" action="{{ route('admin.settings.two-factor.setup') }}">@csrf<button class="btn btn-primary">Configurar autenticador</button></form>@endif @endif
+@if(session('recovery_codes'))<div class="alert alert-warning mt-3"><strong>Guarde estes códigos agora. Eles não serão exibidos novamente.</strong>@foreach(session('recovery_codes') as $code)<code class="d-block">{{ $code }}</code>@endforeach</div>@endif</x-admin.settings.section-card></div>
+<aside class="settings-column settings-sidebar"><x-admin.settings.section-card title="Sessão Atual"><p class="small text-break">{{ request()->userAgent() }}</p><p class="small">IP: {{ request()->ip() }}</p></x-admin.settings.section-card><x-admin.settings.section-card title="Encerrar sessões"><p>Encerra todos os dispositivos e revoga chaves de API.</p><form method="POST" action="{{ route('admin.settings.sessions') }}">@csrf<label class="form-label w-100">Confirme sua senha<input class="form-control" type="password" name="current_password" required></label><button class="btn btn-outline-danger">Encerrar todas as sessões</button></form></x-admin.settings.section-card></aside></div></x-admin.settings.layout>

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/admin/dashboard');
         $middleware->statefulApi();
+        $middleware->alias(['abilities' => CheckAbilities::class]);
         $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {

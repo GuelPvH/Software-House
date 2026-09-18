@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 use App\Models\User;
 
-it('allows temporary unauthenticated access to the admin dashboard', function (): void {
-    $this->get(route('admin.dashboard'))
-        ->assertOk()
-        ->assertSee('Dashboard administrativo')
-        ->assertSee('Sem autenticação');
+it('requires authentication for the dashboard', function (): void {
+    $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
 });
 
 it('renders the login screen', function (): void {
     $this->get(route('login'))
         ->assertOk()
-        ->assertSee('Acessar o painel');
+        ->assertSee('Bem-vindo de volta');
 });
 
 it('authenticates a user and redirects to the intended admin page', function (): void {

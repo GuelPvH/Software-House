@@ -10,3 +10,5 @@ if (document.readyState === 'loading') {
 } else {
     boot();
 }
+
+import './internal-kanban';

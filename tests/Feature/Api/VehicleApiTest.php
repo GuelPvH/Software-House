@@ -34,7 +34,7 @@ it('exibe um veículo sem autenticação', function (): void {
 });
 
 it('cria veículo com autenticação', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
 
     postJson('/api/vehicles', [
         'plate' => 'ABC-1234',
@@ -57,7 +57,7 @@ it('impede criação sem autenticação', function (): void {
 });
 
 it('atualiza veículo com autenticação', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
     $vehicle = Vehicle::factory()->create();
 
     putJson("/api/vehicles/{$vehicle->id}", [
@@ -68,7 +68,7 @@ it('atualiza veículo com autenticação', function (): void {
 });
 
 it('remove veículo com autenticação', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
     $vehicle = Vehicle::factory()->create();
 
     deleteJson("/api/vehicles/{$vehicle->id}")
@@ -90,7 +90,7 @@ it('remove veículo com autenticação', function (): void {
 */
 
 it('rejeita criação sem os campos obrigatórios', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
 
     postJson('/api/vehicles', [])
         ->assertUnprocessable()
@@ -98,7 +98,7 @@ it('rejeita criação sem os campos obrigatórios', function (): void {
 });
 
 it('rejeita placa já cadastrada', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
     $existing = Vehicle::factory()->create();
 
     postJson('/api/vehicles', [
@@ -112,7 +112,7 @@ it('rejeita placa já cadastrada', function (): void {
 });
 
 it('rejeita status fora do enum', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
 
     postJson('/api/vehicles', [
         'plate' => 'ABC1D23',
@@ -126,7 +126,7 @@ it('rejeita status fora do enum', function (): void {
 });
 
 it('rejeita ano fora da faixa aceita', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
 
     postJson('/api/vehicles', [
         'plate' => 'ABC1D24',
@@ -141,7 +141,7 @@ it('rejeita ano fora da faixa aceita', function (): void {
 // Salvar sem mexer na placa não pode falhar contra o próprio registro — é o
 // que o `->ignore()` do UpdateVehicleRequest garante.
 it('aceita atualização que reenvia a própria placa', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
     $vehicle = Vehicle::factory()->create();
 
     putJson("/api/vehicles/{$vehicle->id}", [
@@ -151,7 +151,7 @@ it('aceita atualização que reenvia a própria placa', function (): void {
 });
 
 it('rejeita atualização para placa de outro veículo', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
     [$first, $second] = Vehicle::factory()->count(2)->create()->all();
 
     putJson("/api/vehicles/{$first->id}", ['plate' => $second->plate])
@@ -160,7 +160,7 @@ it('rejeita atualização para placa de outro veículo', function (): void {
 });
 
 it('devolve 404 ao atualizar veículo inexistente', function (): void {
-    Sanctum::actingAs(User::factory()->create());
+    Sanctum::actingAs(User::factory()->create(), ['vehicles:write']);
 
     putJson('/api/vehicles/999999', ['brand' => 'Fiat'])->assertNotFound();
 });

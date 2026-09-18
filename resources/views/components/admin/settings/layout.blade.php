@@ -8,6 +8,7 @@
         'security' => ['label' => 'Segurança', 'icon' => 'bi-shield-lock-fill', 'route' => 'admin.settings.security'],
         'integrations' => ['label' => 'Integrações', 'icon' => 'bi-plug-fill', 'route' => 'admin.settings.integrations'],
     ];
+    $tabs = array_filter($tabs, fn($tab) => auth()->user()->canModule(match(explode('.', $tab['route'])[2]) { 'company' => 'company', 'integrations' => 'integrations', default => 'settings' }));
 @endphp
 
 <x-admin.layout title="Configurações" page="Configurações">

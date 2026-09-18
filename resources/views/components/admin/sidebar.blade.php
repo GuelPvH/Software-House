@@ -6,7 +6,10 @@
         ['label' => 'Serviços', 'icon' => 'bi-layers-fill', 'route' => 'admin.services.index', 'active' => 'admin.services.*'],
         ['label' => 'Financeiro', 'icon' => 'bi-wallet2', 'route' => 'admin.finance.index', 'active' => 'admin.finance.*'],
         ['label' => 'Configurações', 'icon' => 'bi-gear-fill', 'route' => 'admin.settings.profile', 'active' => 'admin.settings.*'],
+        ['label' => 'Solicitações de acesso', 'icon' => 'bi-person-check', 'route' => 'admin.access.index', 'active' => 'admin.access.*'],
+        ['label' => 'Administração técnica', 'icon' => 'bi-code-square', 'route' => 'admin.technical.index', 'active' => 'admin.technical.*'],
     ];
+    $items = array_filter($items, fn($item) => auth()->user()?->canModule(explode('.', $item['route'])[1]));
 @endphp
 
 <aside class="admin-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-label="Menu administrativo">
@@ -27,7 +30,7 @@
     </nav>
 
     <div class="admin-user d-flex align-items-center gap-2 p-3">
-        <img src="{{ asset('images/admin/admin-user.png') }}" alt="Foto do usuário administrador" class="admin-avatar rounded-circle border">
+        @if(auth()->user()->avatar_path)<img src="{{ route('admin.settings.photo', auth()->id()) }}" alt="Sua foto" class="admin-avatar rounded-circle border" style="object-fit:cover">@else<span class="admin-avatar rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" aria-hidden="true">{{ mb_strtoupper(mb_substr(auth()->user()->name,0,1)) }}</span>@endif
         <div class="min-w-0 flex-grow-1 lh-sm">
             <strong class="d-block text-truncate" style="font-size: 13px">{{ auth()->user()?->name ?? 'Acesso temporário' }}</strong>
             <small class="d-block text-secondary text-truncate" style="font-size: 10px">{{ auth()->user()?->email ?? 'Sem autenticação' }}</small>
