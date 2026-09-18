@@ -1,1 +1,0 @@
-<x-publico.navbar class="position-fixed top-0 w-100 backdrop-blur" style="z-index: 1040; background-color: rgba(255, 255, 255, 0.9) !important;" />

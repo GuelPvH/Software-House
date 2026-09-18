@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-white border-bottom py-3 {{ $class ?? '' }}">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold text-dark" href="{{ route('publico.deploy.inicio-deploy') }}">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold text-dark" href="{{ route('publico.inicio.index') }}">
             <span class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-2 fw-bold" style="width: 28px; height: 28px; font-size: 14px;">D</span>
             Deploy
         </a>
@@ -12,10 +12,10 @@
         <div class="collapse navbar-collapse" id="siteNavbar">
             <ul class="navbar-nav mx-auto gap-lg-4 align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link {{ Route::is('publico.deploy.inicio-deploy') ? 'text-primary fw-medium' : 'text-secondary' }}" href="{{ route('publico.deploy.inicio-deploy') }}">Início</a>
+                    <a class="nav-link {{ Route::is('publico.inicio.index') ? 'text-primary fw-medium' : 'text-secondary' }}" href="{{ route('publico.inicio.index') }}">Início</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ Route::is('publico.deploy.servicos-deploy') ? 'text-primary fw-medium' : 'text-secondary' }}" href="{{ route('publico.deploy.servicos-deploy')}}">Serviços</a>
+                    <a class="nav-link {{ Route::is('publico.servicos.index') ? 'text-primary fw-medium' : 'text-secondary' }}" href="{{ route('publico.servicos.index')}}">Serviços</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('publico.projetos.index') ? 'text-primary fw-medium' : 'text-secondary' }}" href="{{ route('publico.projetos.index') }}">Projetos</a>
