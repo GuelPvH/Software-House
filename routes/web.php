@@ -81,3 +81,9 @@ Route::get('/up/deep', function () {
 
     return response()->json($checks, $healthy ? 200 : 503);
 })->name('health.deep');
+
+Route::view('/contato', 'pages.publico.contato.index')->name('publico.contato.index');
+
+Route::view('/projetos', 'pages.publico.projetos.index')->name('publico.projetos.index');
+
+Route::view('/admin/login', 'pages.admin.login.index')->name('admin.login.index');
